@@ -16,6 +16,9 @@
 
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-md focus:outline-none">
+    <?php esc_html_e( 'Skip to content', 'storefront-zero' ); ?>
+</a>
 
 <header id="masthead" class="site-header bg-white shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,7 +26,7 @@
             <!-- Site branding -->
             <div class="flex-shrink-0">
                 <a href="<?php echo esc_url(home_url('/')); ?>" class="text-xl font-bold text-gray-900">
-                    <?php bloginfo('name'); ?>
+                    <?php echo esc_html( get_bloginfo( 'name' ) ); ?>
                 </a>
             </div>
 
@@ -61,9 +64,15 @@
                         </svg>
                     </button>
                     <nav data-drawer-menu class="hidden lg:flex lg:space-x-4">
-                        <a href="<?php echo esc_url(home_url('/shop')); ?>" class="text-gray-600 hover:text-gray-900">Shop</a>
-                        <a href="<?php echo esc_url(home_url('/cart')); ?>" class="text-gray-600 hover:text-gray-900">Cart</a>
-                        <a href="<?php echo esc_url(home_url('/checkout')); ?>" class="text-gray-600 hover:text-gray-900">Checkout</a>
+                        <?php
+                        wp_nav_menu( [
+                            'theme_location' => 'primary',
+                            'container'      => false,
+                            'menu_class'     => 'flex space-x-4',
+                            'fallback_cb'    => false,
+                            'depth'          => 1,
+                        ] );
+                        ?>
                     </nav>
                 </mobile-drawer>
             </nav>

@@ -17,6 +17,7 @@ class View
      */
     public static function render( string $view, array $data = [] ): void
     {
+        $view = basename( $view );
         $path = __DIR__ . '/' . $view . '.php';
 
         if ( ! file_exists( $path ) ) {

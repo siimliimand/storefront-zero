@@ -150,7 +150,8 @@ add_action( 'widgets_init', 'storefront_zero_widgets_init' );
  * @return void
  */
 function storefront_zero_flight_init(): void {
-	if ( strpos( $_SERVER['REQUEST_URI'], '/htmx-api' ) !== 0 ) {
+	$request_uri = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) );
+	if ( strpos( $request_uri, '/htmx-api' ) !== 0 ) {
 		return;
 	}
 

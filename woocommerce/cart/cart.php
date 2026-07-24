@@ -121,6 +121,7 @@ do_action( 'woocommerce_before_cart_table' );
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mt-6 gap-4">
         <div class="coupon">
             <?php if ( wc_coupons_enabled() ) : ?>
+                <?php wp_nonce_field( 'woocommerce-apply-coupon', 'woocommerce-apply-coupon-nonce' ); ?>
                 <label for="coupon_code" class="block text-sm font-medium text-gray-700 mb-1"><?php esc_html_e( 'Coupon:', 'storefront-zero' ); ?></label>
                 <div class="flex gap-2">
                     <input type="text" name="coupon_code" class="input-text border border-gray-300 rounded px-3 py-2 text-sm w-48" id="coupon_code" value="" placeholder="<?php esc_attr_e( 'Coupon code', 'storefront-zero' ); ?>" />

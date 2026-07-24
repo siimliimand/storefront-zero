@@ -56,7 +56,7 @@ class ProductController
         }
 
         // Hydrate product IDs into WC_Product objects.
-        $products = array_filter( array_map( 'wc_get_product', $products ) );
+        $products = array_filter( array_map( static fn( int $id ): ?\WC_Product => wc_get_product( $id ), $products ) );
 
         View::render( 'search-results', [
             'products' => $products,

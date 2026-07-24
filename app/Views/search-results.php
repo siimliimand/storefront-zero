@@ -7,6 +7,9 @@
  * @package Storefront_Zero
  */
 
+/** @var array<int, \WC_Product> $products */
+/** @var string $query */
+
 if ( empty( $products ) ) :
 ?>
 <div class="search-results-empty p-4 text-center text-gray-500">
@@ -26,8 +29,13 @@ if ( empty( $products ) ) :
 <div class="search-results">
     <?php foreach ( $products as $product ) :
         $permalink  = get_permalink( $product->get_id() );
+        if ( ! $permalink ) {
+            continue;
+        }
         $image_id   = $product->get_image_id();
-        $image_url  = $image_id ? wp_get_attachment_image_url( $image_id, 'thumbnail' ) : '';
+        $image_url  = ( is_int( $image_id ) && $image_id > 0 )
+            ? wp_get_attachment_image_url( $image_id, 'thumbnail' )
+            : '';
     ?>
     <a href="<?php echo esc_url( $permalink ); ?>"
        class="search-result-item flex items-center gap-3 p-2 hover:bg-gray-100 rounded">

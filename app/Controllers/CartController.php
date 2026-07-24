@@ -71,13 +71,15 @@ class CartController
 			return;
 		}
 
+		$success = false;
+
 		if ( 0 === $quantity ) {
-			$removed = WC()->cart->remove_cart_item( $cart_item_key );
+			$success = WC()->cart->remove_cart_item( $cart_item_key );
 		} else {
-			$updated = WC()->cart->set_quantity( $cart_item_key, $quantity );
+			$success = WC()->cart->set_quantity( $cart_item_key, $quantity );
 		}
 
-		if ( isset( $removed ) ? $removed : $updated ) {
+		if ( $success ) {
 			header( 'HX-Trigger: cartUpdated' );
 			self::renderMiniCart();
 		} else {

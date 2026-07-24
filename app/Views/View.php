@@ -8,8 +8,8 @@ class View
     /**
      * Render a view template with the given data.
      *
-     * @param string $view View name relative to app/Views/ (without .php extension).
-     * @param array  $data Variables to extract into the template scope.
+     * @param string         $view View name relative to app/Views/ (without .php extension).
+     * @param array<string, mixed> $data Variables to extract into the template scope.
      *
      * @return void
      *

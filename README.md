@@ -53,6 +53,24 @@ Flight PHP handles HTMX fragment requests at `/htmx-api/*`. Controllers in `src/
 
 HTMX attributes trigger requests to the Flight PHP routes. Each route returns a partial HTML response that HTMX swaps into the DOM — no full page reloads needed.
 
+## Plugin Compatibility
+
+### WP Rocket
+
+To ensure HTMX functionality works correctly with WP Rocket caching:
+
+1. **Exclude JS from Delay/Minification:**
+   Go to WP Rocket → Settings → File Optimization → JavaScript Files
+   - Add `htmx.min.js` to "Exclude JavaScript Files"
+   - Add `app.js` to "Exclude JavaScript Files"
+
+   These files must load immediately (not deferred) for HTMX to function properly.
+
+2. **Fragment Caching:**
+   Flight PHP serves HTML fragments for HTMX requests. Configure your server cache to:
+   - Cache static fragments (search results, page content)
+   - Bypass cache for cart/checkout responses (they set `Set-Cookie` headers)
+
 ## Contributing
 
 1. Fork the repository.

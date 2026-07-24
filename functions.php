@@ -119,3 +119,27 @@ function storefront_zero_widgets_init(): void {
 	] );
 }
 add_action( 'widgets_init', 'storefront_zero_widgets_init' );
+
+/**
+ * Intercept HTMX API requests and hand them off to Flight PHP.
+ *
+ * Only handles requests under /htmx-api — all other URLs proceed through
+ * the normal WordPress template hierarchy, preserving Yoast SEO metadata.
+ *
+ * @return void
+ */
+function storefront_zero_flight_init(): void {
+	if ( strpos( $_SERVER['REQUEST_URI'], '/htmx-api' ) !== 0 ) {
+		return;
+	}
+
+	define( 'FLIGHT_START', true );
+
+	Flight::set( 'base_url', '/htmx-api' );
+
+	require_once __DIR__ . '/app/routes.php';
+
+	Flight::start();
+	exit;
+}
+add_action( 'template_redirect', 'storefront_zero_flight_init', 5 );

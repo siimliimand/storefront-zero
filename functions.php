@@ -230,3 +230,22 @@ function storefront_zero_script_module_tag( string $tag, string $handle ): strin
 	return $tag;
 }
 add_filter( 'script_loader_tag', 'storefront_zero_script_module_tag', 10, 2 );
+
+/**
+ * Add loading="lazy" to WooCommerce product images on shop and archive pages.
+ *
+ * Filters wp_get_attachment_image_attributes only on WooCommerce product pages
+ * to avoid affecting above-the-fold images site-wide.
+ *
+ * @param array        $attr       Image attributes.
+ * @param \WP_Post     $attachment Attachment post object.
+ * @param string|int[] $size       Requested image size.
+ * @return array Modified attributes.
+ */
+function storefront_zero_lazy_product_images( array $attr, \WP_Post $attachment, $size ): array {
+	if ( is_woocommerce() ) {
+		$attr['loading'] = 'lazy';
+	}
+	return $attr;
+}
+add_filter( 'wp_get_attachment_image_attributes', 'storefront_zero_lazy_product_images', 10, 3 );

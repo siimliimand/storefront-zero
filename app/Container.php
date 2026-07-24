@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace ThemeApp;
 
 use ThemeApp\Controllers\CartController;
-use ThemeApp\Controllers\NonceController;
 use ThemeApp\Controllers\ProductController;
 
 class Container
@@ -98,12 +97,6 @@ class Container
 
         $container->set(ProductController::class, static function (self $c): ProductController {
             return new ProductController(
-                $c->get(View::class),
-            );
-        });
-
-        $container->set(NonceController::class, static function (self $c): NonceController {
-            return new NonceController(
                 $c->get(View::class),
             );
         });

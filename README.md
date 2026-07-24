@@ -60,7 +60,6 @@ storefront-zero/
 ├── app/
 │   ├── Controllers/              # Flight PHP route handlers
 │   │   ├── CartController.php    # Cart operations: add, update qty, remove, mini-cart
-│   │   ├── NonceController.php   # Nonce refresh endpoint
 │   │   └── ProductController.php # Live product search with transient caching
 │   ├── Views/                    # View templates rendered by ThemeApp\View
 │   │   ├── View.php              # Static view renderer with try/finally safety
@@ -94,7 +93,6 @@ storefront-zero/
 │   │   └── RouteTest.php
 │   ├── Controllers/
 │   │   ├── CartControllerTest.php
-│   │   ├── NonceControllerTest.php
 │   │   └── ProductControllerTest.php
 │   └── Views/
 │       └── ViewTest.php

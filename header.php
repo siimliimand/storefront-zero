@@ -64,7 +64,10 @@
             </div>
 
             <!-- Navigation -->
-            <nav class="flex items-center space-x-4">
+            <nav class="flex items-center space-x-2">
+                <!-- Dark mode toggle -->
+                <dark-mode-toggle></dark-mode-toggle>
+
                 <!-- Mini-cart with live HTMX sync -->
                 <div id="mini-cart-container"
                      hx-get="/htmx-api/cart/mini"

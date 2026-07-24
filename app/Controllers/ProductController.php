@@ -57,7 +57,7 @@ class ProductController
             return;
         }
 
-        $cache_key = 'sz_search_' . md5( $query );
+        $cache_key = 'sz_search_' . hash( 'xxh3', $query );
         $products  = get_transient( $cache_key );
 
         if ( false === $products ) {
@@ -73,8 +73,13 @@ class ProductController
             $products = $product_ids;
         }
 
-        // Hydrate product IDs into WC_Product objects.
-        $products = array_filter( array_map( static fn( int $id ): ?\WC_Product => wc_get_product( $id ), $products ) );
+        // Hydrate product IDs into WC_Product objects via a single batch query (avoids N+1).
+        $products = array_filter(
+            wc_get_products( [
+                'include' => $products,
+                'return'  => 'objects',
+            ] )
+        );
 
         $this->view->render( 'search-results', [
             'products' => $products,

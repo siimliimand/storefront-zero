@@ -18,6 +18,20 @@ require_once __DIR__ . '/vendor/autoload.php';
 define( 'SZ_HTMX_VERSION', '1.9.10' );
 
 /**
+ * Get file modification time as a version string, with fallback.
+ *
+ * Returns the file's mtime when the file exists, otherwise falls back to
+ * '1.0.0' so cache-busting still works before the first build.
+ *
+ * @param string $path Absolute path to the file.
+ * @return string Version string.
+ */
+function storefront_zero_filemtime( string $path ): string {
+	$mtime = filemtime( $path );
+	return $mtime ? (string) $mtime : '1.0.0';
+}
+
+/**
  * Enqueue theme assets: Tailwind CSS, HTMX, app JS, and Web Components.
  *
  * @return void
@@ -28,7 +42,7 @@ function storefront_zero_enqueue_assets(): void {
 		'storefront-zero-style',
 		get_template_directory_uri() . '/assets/css/main.css',
 		[],
-		(string) filemtime( __DIR__ . '/assets/css/main.css' )
+		storefront_zero_filemtime( __DIR__ . '/assets/css/main.css' )
 	);
 
 	// HTMX — local vendor bundle for reliability and GDPR compliance.
@@ -45,7 +59,7 @@ function storefront_zero_enqueue_assets(): void {
 		'storefront-zero-app',
 		get_template_directory_uri() . '/assets/js/app.js',
 		[ 'htmx' ],
-		(string) filemtime( __DIR__ . '/assets/js/app.js' ),
+		storefront_zero_filemtime( __DIR__ . '/assets/js/app.js' ),
 		true
 	);
 
@@ -64,7 +78,7 @@ function storefront_zero_enqueue_assets(): void {
 		'storefront-zero-qty-stepper',
 		get_template_directory_uri() . '/assets/js/qty-stepper.js',
 		[ 'htmx' ],
-		(string) filemtime( __DIR__ . '/assets/js/qty-stepper.js' ),
+		storefront_zero_filemtime( __DIR__ . '/assets/js/qty-stepper.js' ),
 		true
 	);
 
@@ -72,11 +86,12 @@ function storefront_zero_enqueue_assets(): void {
 	$web_components = [
 		'mobile-drawer',
 		'toast-notification',
+		'dark-mode-toggle',
 	];
 
 	foreach ( $web_components as $wc_name ) {
 		$wc_path     = __DIR__ . '/assets/js/web-components/' . $wc_name . '.js';
-		$wc_version  = (string) filemtime( $wc_path );
+		$wc_version  = storefront_zero_filemtime( $wc_path );
 
 		wp_enqueue_script(
 			'sz-wc-' . $wc_name,
@@ -230,6 +245,24 @@ function storefront_zero_script_module_tag( string $tag, string $handle ): strin
 	return $tag;
 }
 add_filter( 'script_loader_tag', 'storefront_zero_script_module_tag', 10, 2 );
+
+/**
+ * Add defer attribute to the HTMX script tag.
+ *
+ * WordPress has no native `defer` parameter for wp_enqueue_script(), so we
+ * inject it via the script_loader_tag filter.
+ *
+ * @param string $tag    The script tag.
+ * @param string $handle The script handle.
+ * @return string Modified script tag.
+ */
+function storefront_zero_defer_htmx( string $tag, string $handle ): string {
+	if ( 'htmx' === $handle ) {
+		return str_replace( ' src=', ' defer src=', $tag );
+	}
+	return $tag;
+}
+add_filter( 'script_loader_tag', 'storefront_zero_defer_htmx', 20, 2 );
 
 /**
  * Add loading="lazy" to WooCommerce product images on shop and archive pages.

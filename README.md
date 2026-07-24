@@ -8,11 +8,15 @@ A minimal, performance-first WordPress/WooCommerce theme.
 - **HTMX dynamic fragments** — server-rendered partial updates without full page reloads
 - **MVC architecture** — controllers in `app/Controllers/`, views in `app/Views/`
 - **Web Components** — encapsulated interactive UI widgets with ARIA support
-- **Tailwind CSS** — utility-first styling with build pipeline
-- **WooCommerce integration** — full storefront, cart, checkout, and account support
+- **Tailwind CSS** — utility-first styling with design tokens and component layers
+- **WooCommerce templates** — full overrides for single product, cart, quantity input, add-to-cart, notices, and archive
 - **Local HTMX** — bundled vendor script, no CDN dependency
 - **Nonce-scoped security** — dedicated `storefront_zero_htmx` nonce for HTMX requests
-- **Lighthouse 95+ target** — performance-first architecture and defaults
+- **Rate limiting** — transient-based caching on search endpoint (60s TTL)
+- **Security hardening** — sanitized server variables, path traversal guards, Content-Type headers
+- **Accessibility** — skip-to-content link, ARIA labels, translatable strings, focus management
+- **Design system** — Tailwind brand tokens (colors, fonts), reusable `.btn-primary` and `.card` components
+- **Performance** — WC script dequeuing on non-product pages, transient caching, `type="module"` for web components
 
 ## Requirements
 
@@ -49,28 +53,39 @@ storefront-zero/
 │   │   ├── CartController.php
 │   │   └── ProductController.php
 │   ├── Views/                # View templates rendered by ThemeApp\View
-│   │   ├── View.php          # Static view renderer
+│   │   ├── View.php          # Static view renderer with path traversal guard
 │   │   ├── cart-error.php
 │   │   ├── mini-cart.php
 │   │   └── search-results.php
 │   └── routes.php            # Flight route definitions + nonce middleware
 ├── assets/
 │   ├── css/
-│   │   ├── input.css         # Tailwind directives
+│   │   ├── input.css         # Tailwind directives + @layer components
 │   │   └── main.css          # Compiled output
 │   └── js/
-│       ├── app.js            # HTMX config, a11y handlers
+│       ├── app.js            # HTMX config, search toggle, a11y handlers
 │       ├── vendor/
 │       │   └── htmx.min.js   # Local HTMX v1.9.10
 │       └── web-components/
 │           └── mobile-drawer.js
 ├── template-parts/           # WordPress loop templates
-│   ├── content.php           # Blog post display
+│   ├── content.php           # Blog post display with aria-labels
 │   ├── content-none.php      # No posts found
 │   └── content-page.php      # Page display
 ├── woocommerce/              # WooCommerce template overrides
-├── functions.php             # Theme setup, enqueues, Flight init
-├── header.php                # Site header with HTMX search
+│   ├── archive-product.php   # Product archive (fixed header/footer)
+│   ├── cart/
+│   │   └── cart.php          # Tailwind-styled cart page
+│   ├── global/
+│   │   └── quantity-input.php # Quantity stepper with +/- buttons
+│   ├── loop/
+│   │   └── add-to-cart.php   # HTMX-powered add-to-cart
+│   ├── notices/
+│   │   ├── success.php       # Green Tailwind alert
+│   │   └── error.php         # Red Tailwind alert
+│   └── single-product.php    # Single product page override
+├── functions.php             # Theme setup, enqueues, Flight init, WC asset management
+├── header.php                # Site header with HTMX search, logo support, skip-to-content
 ├── footer.php                # Site footer
 ├── index.php                 # Main template (WordPress loop)
 ├── sidebar.php               # Widget area
@@ -115,38 +130,74 @@ Flight PHP handles HTMX fragment requests at `/htmx-api/*`. All mutating request
 
 | Method | Route | Controller | Description |
 |---|---|---|---|
-| GET | `/search` | `ProductController::liveSearch()` | Live product search |
+| GET | `/search` | `ProductController::liveSearch()` | Live product search (rate-limited, cached 60s) |
 | POST | `/cart/add` | `CartController::addToCart()` | Add product to cart |
 
 ### HTMX Fragments
 
 HTMX attributes trigger requests to the Flight PHP routes. Each route returns a partial HTML response that HTMX swaps into the DOM — no full page reloads needed.
 
-HTMX is loaded locally from `assets/js/vendor/htmx.min.js` (v1.9.10) to avoid CDN dependencies.
+HTMX is loaded locally from `assets/js/vendor/htmx.min.js` (v1.9.10) to avoid CDN dependencies. The search results dropdown auto-toggles visibility via an `htmx:afterSwap` listener.
 
 ### Web Components
 
-The theme uses web components for interactive widgets. Each component is self-registering via `customElements.define()` in its own file under `assets/js/web-components/`.
+The theme uses web components for interactive widgets. Each component is self-registering via `customElements.define()` in its own file under `assets/js/web-components/`. Scripts are loaded as ES modules via a `script_loader_tag` filter.
 
 Current components:
-- `<mobile-drawer>` — mobile navigation with ARIA attributes, Escape key support, and focus management
+- `<mobile-drawer>` — mobile navigation with ARIA attributes, Escape key support, deterministic IDs, and focus management
 
-Web components are registered explicitly in `functions.php` (no `glob()` scan at runtime).
+### WooCommerce Templates
+
+The theme provides full WooCommerce template overrides:
+
+| Template | Purpose |
+|---|---|
+| `single-product.php` | Single product page with theme header/footer |
+| `cart/cart.php` | Tailwind-styled cart with quantity inputs and remove buttons |
+| `global/quantity-input.php` | Quantity stepper with +/- buttons |
+| `loop/add-to-cart.php` | HTMX-powered add-to-cart button |
+| `notices/success.php` | Green Tailwind alert box |
+| `notices/error.php` | Red Tailwind alert box |
+| `archive-product.php` | Product archive (uses theme header/footer) |
+
+### Design System
+
+Tailwind CSS is configured with design tokens in `tailwind.config.js`:
+
+- **Brand colors**: `brand-50` through `brand-900` (blue palette)
+- **Surface colors**: `surface` (white), `muted` (gray)
+- **Font family**: Inter with system fallbacks
+
+Component classes in `assets/css/input.css`:
+- `.btn-primary` — branded button with hover, focus ring, and transitions
+- `.card` — surface card with border, shadow, and padding
 
 ### Accessibility
 
 All interactive components include:
-- ARIA attributes (`aria-expanded`, `aria-controls`, `role`)
-- Keyboard navigation (`Escape` key handlers)
-- Focus management (focus trapping in drawers, focus return on dismiss)
-- Outside-click dismiss for dropdowns
+- **Skip-to-content link** — visible on focus, placed after `wp_body_open()`
+- **ARIA labels** — search input, spinner, Read more links with post titles
+- **Keyboard navigation** — Escape key handlers, focus management in drawers
+- **Translatable strings** — `_n()` for singular/plural, text domain `'storefront-zero'`
+- **Semantic HTML** — `<nav>` landmarks instead of `role="menu"` / `role="menuitem"`
 
 ## Security
 
 - **Nonce scoping**: HTMX requests use a dedicated `storefront_zero_htmx` nonce (not the default `wp_rest` nonce).
 - **Middleware verification**: All mutating HTMX requests (POST, PUT, DELETE) pass through Flight middleware that verifies the nonce.
-- **Input validation**: Server-side sanitization via `sanitize_text_field()`, `absint()`, and `wp_unslash()`.
+- **Input sanitization**: `$_SERVER['REQUEST_URI']` sanitized with `sanitize_text_field(wp_unslash())`.
+- **Path traversal guard**: `basename()` applied to view names in `View::render()`.
 - **Output escaping**: WordPress escaping functions (`esc_html()`, `esc_url()`, `esc_attr()`, `wp_kses_post()`) used throughout.
+- **Content-Type headers**: All HTMX responses include `Content-Type: text/html; charset=utf-8`.
+- **Rate limiting**: Search endpoint cached with 60s transient TTL.
+- **Strict types**: `declare(strict_types=1)` on all PHP files.
+
+## Performance
+
+- **WC script dequeuing**: `select2`, `zoom`, `prettyPhoto`, and variation scripts are dequeued on non-product pages.
+- **Transient caching**: Search results cached for 60 seconds via WordPress transients.
+- **Local HTMX**: No CDN dependency, single request.
+- **type="module"**: Web component scripts loaded as ES modules for modern browser optimization.
 
 ## Plugin Compatibility
 

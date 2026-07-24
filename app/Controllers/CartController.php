@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace ThemeApp\Controllers;
 
+use Flight;
 use ThemeApp\View;
 
 class CartController
@@ -49,8 +50,8 @@ class CartController
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
-		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
-		$quantity   = isset( $_POST['quantity'] ) ? absint( $_POST['quantity'] ) : 1;
+		$product_id = isset( Flight::request()->data['product_id'] ) ? absint( Flight::request()->data['product_id'] ) : 0;
+		$quantity   = isset( Flight::request()->data['quantity'] ) ? absint( Flight::request()->data['quantity'] ) : 1;
 
 		if ( empty( $product_id ) || ! wc_get_product( $product_id ) ) {
 			status_header( 400 );
@@ -88,8 +89,8 @@ class CartController
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
-		$cart_item_key = isset( $_POST['cart_item_key'] ) ? sanitize_text_field( wp_unslash( $_POST['cart_item_key'] ) ) : '';
-		$quantity      = isset( $_POST['quantity'] ) ? absint( $_POST['quantity'] ) : 1;
+		$cart_item_key = isset( Flight::request()->data['cart_item_key'] ) ? sanitize_text_field( wp_unslash( Flight::request()->data['cart_item_key'] ) ) : '';
+		$quantity      = isset( Flight::request()->data['quantity'] ) ? absint( Flight::request()->data['quantity'] ) : 1;
 
 		if ( empty( $cart_item_key ) ) {
 			status_header( 400 );
@@ -122,7 +123,7 @@ class CartController
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
-		$cart_item_key = isset( $_POST['cart_item_key'] ) ? sanitize_text_field( wp_unslash( $_POST['cart_item_key'] ) ) : '';
+		$cart_item_key = isset( Flight::request()->data['cart_item_key'] ) ? sanitize_text_field( wp_unslash( Flight::request()->data['cart_item_key'] ) ) : '';
 
 		if ( empty( $cart_item_key ) ) {
 			status_header( 400 );

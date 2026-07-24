@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace ThemeApp\Controllers;
 
+use Flight;
 use ThemeApp\View;
 
 /**
@@ -49,7 +50,7 @@ class ProductController
     {
         header( 'Content-Type: text/html; charset=utf-8' );
 
-        $query = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
+        $query = isset( Flight::request()->query['s'] ) ? sanitize_text_field( wp_unslash( Flight::request()->query['s'] ) ) : '';
 
         if ( empty( $query ) ) {
             echo '';

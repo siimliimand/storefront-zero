@@ -85,4 +85,31 @@ class CartController
 			echo '<!-- Could not update cart -->';
 		}
 	}
+
+	/**
+	 * Remove cart item via HTMX DELETE.
+	 * Returns updated mini-cart fragment with HX-Trigger header.
+	 */
+	public static function removeItem(): void
+	{
+		header( 'Content-Type: text/html; charset=utf-8' );
+
+		$cart_item_key = isset( $_POST['cart_item_key'] ) ? sanitize_text_field( wp_unslash( $_POST['cart_item_key'] ) ) : '';
+
+		if ( empty( $cart_item_key ) ) {
+			status_header( 400 );
+			echo '<!-- Invalid cart item key -->';
+			return;
+		}
+
+		$removed = WC()->cart->remove_cart_item( $cart_item_key );
+
+		if ( $removed ) {
+			header( 'HX-Trigger: cartUpdated' );
+			self::renderMiniCart();
+		} else {
+			status_header( 400 );
+			echo '<!-- Could not remove cart item -->';
+		}
+	}
 }

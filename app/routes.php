@@ -60,3 +60,8 @@ Flight::route( 'GET /cart/mini', function () {
 Flight::route( 'POST /cart/update-qty', function () {
 	CartController::updateQuantity();
 } );
+
+// DELETE /cart/remove — Remove item from cart.
+Flight::route( 'DELETE /cart/remove', function () {
+	CartController::removeItem();
+} );

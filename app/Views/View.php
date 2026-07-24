@@ -42,7 +42,14 @@ class View
             while ( ob_get_level() ) {
                 ob_end_clean();
             }
-            throw $e;
+
+            status_header( 500 );
+
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                echo '<!-- View rendering error: ' . esc_html( $e->getMessage() ) . ' in ' . esc_html( $e->getFile() ) . ' -->';
+            } else {
+                echo '<!-- View rendering error -->';
+            }
         }
     }
 }

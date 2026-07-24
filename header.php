@@ -25,8 +25,12 @@
         <div class="flex items-center justify-between h-16">
             <!-- Site branding -->
             <div class="flex-shrink-0">
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="text-xl font-bold text-gray-900">
-                    <?php echo esc_html( get_bloginfo( 'name' ) ); ?>
+                <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="text-xl font-bold text-gray-900">
+                    <?php if ( has_custom_logo() ) : ?>
+                        <?php the_custom_logo(); ?>
+                    <?php else : ?>
+                        <?php echo esc_html( get_bloginfo( 'name' ) ); ?>
+                    <?php endif; ?>
                 </a>
             </div>
 

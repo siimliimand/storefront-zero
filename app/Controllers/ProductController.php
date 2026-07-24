@@ -30,6 +30,8 @@ class ProductController
      */
     public static function liveSearch(): void
     {
+        header( 'Content-Type: text/html; charset=utf-8' );
+
         $query = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
 
         if ( empty( $query ) ) {

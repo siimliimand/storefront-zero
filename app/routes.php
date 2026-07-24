@@ -19,10 +19,10 @@ use ThemeApp\Controllers\CartController;
  * GET requests are exempt (read-only, no state change).
  */
 Flight::before( 'start', function () {
-	$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+	$method = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) );
 
 	if ( in_array( strtoupper( $method ), [ 'POST', 'PUT', 'DELETE' ], true ) ) {
-		$nonce = $_SERVER['HTTP_X_WP_NONCE'] ?? '';
+		$nonce = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WP_NONCE'] ?? '' ) );
 
 		if ( ! wp_verify_nonce( $nonce, 'storefront_zero_htmx' ) ) {
 			$message = wp_json_encode( [

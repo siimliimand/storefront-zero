@@ -59,6 +59,15 @@ function storefront_zero_enqueue_assets(): void {
 		]
 	);
 
+	// Quantity stepper - +/- buttons for WooCommerce quantity inputs.
+	wp_enqueue_script(
+		'storefront-zero-qty-stepper',
+		get_template_directory_uri() . '/assets/js/qty-stepper.js',
+		[ 'htmx' ],
+		(string) filemtime( __DIR__ . '/assets/js/qty-stepper.js' ),
+		true
+	);
+
 	// Web Components — explicit registration (no glob I/O on every page load).
 	$web_components = [
 		'mobile-drawer',

@@ -73,7 +73,7 @@ it('hydrates cached IDs back to WC_Product objects', function () {
 it('renders search-results view with products and query', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/ProductController.php');
 
-    expect($source)->toContain("View::render( 'search-results'");
+    expect($source)->toContain("\$this->view->render( 'search-results'");
     expect($source)->toContain("'products' => \$products");
     expect($source)->toContain("'query'    => \$query");
 });

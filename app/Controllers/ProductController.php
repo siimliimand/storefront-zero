@@ -19,6 +19,23 @@ use ThemeApp\View;
 class ProductController
 {
     /**
+     * View instance for rendering templates.
+     *
+     * @var \ThemeApp\View
+     */
+    private View $view;
+
+    /**
+     * Constructor. Injected by the DI container.
+     *
+     * @param \ThemeApp\View $view View renderer.
+     */
+    public function __construct( View $view )
+    {
+        $this->view = $view;
+    }
+
+    /**
      * Live product search via HTMX.
      *
      * Sanitizes the query, queries WooCommerce for matching published products,
@@ -28,7 +45,7 @@ class ProductController
      *
      * @return void
      */
-    public static function liveSearch(): void
+    public function liveSearch(): void
     {
         header( 'Content-Type: text/html; charset=utf-8' );
 
@@ -58,7 +75,7 @@ class ProductController
         // Hydrate product IDs into WC_Product objects.
         $products = array_filter( array_map( static fn( int $id ): ?\WC_Product => wc_get_product( $id ), $products ) );
 
-        View::render( 'search-results', [
+        $this->view->render( 'search-results', [
             'products' => $products,
             'query'    => $query,
         ] );

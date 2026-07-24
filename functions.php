@@ -26,10 +26,10 @@ function storefront_zero_enqueue_assets(): void {
 		(string) filemtime( __DIR__ . '/assets/css/main.css' )
 	);
 
-	// HTMX from CDN — loaded in footer.
+	// HTMX — local vendor bundle for reliability and GDPR compliance.
 	wp_enqueue_script(
 		'htmx',
-		'https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js',
+		get_template_directory_uri() . '/assets/js/vendor/htmx.min.js',
 		[],
 		'1.9.10',
 		true
@@ -50,25 +50,26 @@ function storefront_zero_enqueue_assets(): void {
 		'ThemeSettings',
 		[
 			'endpoint' => home_url( '/htmx-api' ),
-			'nonce'    => wp_create_nonce( 'wp_rest' ),
+			'nonce'    => wp_create_nonce( 'storefront_zero_htmx' ),
 		]
 	);
 
-	// Web Components — each .js file in the directory depends on HTMX.
-	$wc_dir = __DIR__ . '/assets/js/web-components';
-	if ( is_dir( $wc_dir ) ) {
-		foreach ( glob( $wc_dir . '/*.js' ) as $wc_script ) {
-			$handle     = 'sz-wc-' . sanitize_title( basename( $wc_script, '.js' ) );
-			$wc_version = (string) filemtime( $wc_script );
+	// Web Components — explicit registration (no glob I/O on every page load).
+	$web_components = [
+		'mobile-drawer',
+	];
 
-			wp_enqueue_script(
-				$handle,
-				get_template_directory_uri() . '/assets/js/web-components/' . basename( $wc_script ),
-				[ 'htmx' ],
-				$wc_version,
-				true
-			);
-		}
+	foreach ( $web_components as $wc_name ) {
+		$wc_path     = __DIR__ . '/assets/js/web-components/' . $wc_name . '.js';
+		$wc_version  = (string) filemtime( $wc_path );
+
+		wp_enqueue_script(
+			'sz-wc-' . $wc_name,
+			get_template_directory_uri() . '/assets/js/web-components/' . $wc_name . '.js',
+			[ 'htmx' ],
+			$wc_version,
+			true
+		);
 	}
 }
 add_action( 'wp_enqueue_scripts', 'storefront_zero_enqueue_assets' );
@@ -88,6 +89,26 @@ function storefront_zero_setup(): void {
 		'gallery',
 		'caption',
 	] );
+
+	register_nav_menus( [
+		'primary' => esc_html__( 'Primary Menu', 'storefront-zero' ),
+		'footer'  => esc_html__( 'Footer Menu', 'storefront-zero' ),
+	] );
+
+	add_theme_support( 'woocommerce', [
+		'gallery_thumbnail_image_width' => 300,
+		'single_image_width'            => 600,
+		'product_grid'                  => [
+			'default_rows'    => 3,
+			'min_rows'        => 1,
+			'default_columns' => 3,
+			'min_columns'     => 1,
+			'max_columns'     => 4,
+		],
+	] );
+	add_theme_support( 'wc-product-gallery-zoom' );
+	add_theme_support( 'wc-product-gallery-lightbox' );
+	add_theme_support( 'wc-product-gallery-slider' );
 }
 add_action( 'after_setup_theme', 'storefront_zero_setup' );
 

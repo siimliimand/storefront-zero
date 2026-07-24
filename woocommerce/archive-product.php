@@ -32,11 +32,7 @@ get_header( 'shop' );
 
 			<?php woocommerce_product_loop_end(); ?>
 
-			<?php if ( woocommerce_get_loop_pagination() ) : ?>
-				<nav class="woocommerce-pagination">
-					<?php woocommerce_pagination(); ?>
-				</nav>
-			<?php endif; ?>
+			<?php woocommerce_pagination(); ?>
 
 		<?php else : ?>
 			<p><?php esc_html_e( 'No products found matching your selection.', 'storefront-zero' ); ?></p>

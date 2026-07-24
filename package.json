@@ -1,0 +1,12 @@
+{
+  "name": "storefront-zero",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "tailwindcss -i ./assets/css/input.css -o ./assets/css/main.css --watch",
+    "build": "tailwindcss -i ./assets/css/input.css -o ./assets/css/main.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}

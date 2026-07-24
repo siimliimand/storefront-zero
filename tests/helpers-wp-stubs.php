@@ -133,11 +133,60 @@ if (!function_exists('wc_get_cart_url')) {
     }
 }
 
+if (!function_exists('wc_get_product')) {
+    /**
+     * Stub for wc_get_product. Returns a truthy dummy object when the
+     * product ID is positive, null otherwise. Tests that need specific
+     * behaviour should redefine this stub after loading helpers.
+     */
+    function wc_get_product(int $product_id): ?object {
+        if ($product_id <= 0) {
+            return null;
+        }
+
+        return new class ($product_id) {
+            public function __construct(
+                public readonly int $id,
+            ) {}
+        };
+    }
+}
+
 /*
 |--------------------------------------------------------------------------
 | WooCommerce stubs
 |--------------------------------------------------------------------------
 */
+
+/*
+|--------------------------------------------------------------------------
+| WooCommerce class stubs
+|--------------------------------------------------------------------------
+*/
+
+if (!class_exists('WC_Cart')) {
+    /**
+     * Minimal WC_Cart stub for testing. Provides just enough surface
+     * for CartController to mock against.
+     */
+    class WC_Cart
+    {
+        public function add_to_cart(int $product_id, int $quantity = 1, int $variation_id = 0, array $variation = []): bool
+        {
+            return true;
+        }
+
+        public function set_quantity(string $cart_item_key, int $quantity = 1): bool
+        {
+            return true;
+        }
+
+        public function remove_cart_item(string $cart_item_key): bool
+        {
+            return true;
+        }
+    }
+}
 
 if (!function_exists('WC')) {
     function WC(): object {

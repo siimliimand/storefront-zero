@@ -15,4 +15,4 @@ use Tests\TestCase;
 |
 */
 
-uses(TestCase::class)->in('Routes', 'Controllers', 'Views');
+uses(TestCase::class)->in('Routes', 'Controllers', 'Views', 'Feature');

@@ -1,0 +1,19 @@
+/*
+Theme Name: Storefront Zero
+Theme URI: https://github.com/novatools/storefront-zero
+Author: NovaTools
+Author URI: https://novatools.dev
+Description: A minimal, performance-first WordPress/WooCommerce theme powered by Flight PHP, HTMX, Web Components, and Tailwind CSS. Targets Lighthouse mobile 95+ with sub-40ms HTMX fragment TTFB.
+Version: 1.0.0
+Requires at least: 6.4
+Tested up to: 6.7
+Requires PHP: 8.1
+License: GNU General Public License v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: storefront-zero
+Tags: e-commerce, woocommerce, custom-menu, featured-images, theme-options, translation-ready
+
+Storefront Zero is a lightweight WooCommerce theme that uses Flight PHP for server-side
+HTMX fragment routing, vanilla Web Components for interactive UI, and Tailwind CSS for
+styling. No page builders, no React, no jQuery dependency.
+*/

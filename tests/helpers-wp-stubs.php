@@ -3,11 +3,14 @@
 declare(strict_types=1);
 
 /**
- * Minimal WordPress function stubs for theme test suite.
+ * Minimal WordPress/WooCommerce function stubs for theme test suite.
  *
  * Provides just enough stubs to render view templates outside a full
- * WordPress environment. Loaded once via require in the TestCase or
- * individual test files that need to call View::render().
+ * WordPress environment. Loaded once via require_once in the TestCase.
+ *
+ * Every stub is guarded by function_exists / class_exists so it never
+ * redefines something already provided by WordPress core, WooCommerce,
+ * or WP_UnitTestCase when those runtimes are present.
  */
 
 if (!function_exists('esc_html')) {

@@ -1,0 +1,21 @@
+parameters:
+    level: 8
+    paths:
+        - app/
+        - functions.php
+    excludePaths:
+        - vendor/
+        - node_modules/
+        - assets/
+        - woocommerce/
+        - tests/
+    stubFiles:
+        - vendor/phpstan/phpstan-wordpress/stubs/wordpress-stubs.php
+
+    # WordPress dynamic properties and hooks
+    ignoreErrors:
+        - '#Call to an undefined method WC_Product::.*#'
+        - '#Call to an undefined method WC_Cart::.*#'
+
+includes:
+    - vendor/phpstan/phpstan-wordpress/extension.neon

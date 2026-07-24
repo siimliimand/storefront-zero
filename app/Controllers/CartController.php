@@ -45,13 +45,13 @@ class CartController
 
 	/**
 	 * Render mini-cart HTML fragment.
-	 * Shows item count, subtotal, and checkout link.
+	 * Shows cart icon with item count badge; used by GET /htmx-api/cart/mini.
 	 */
 	public static function renderMiniCart(): void
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
-		View::render( 'mini-cart' );
+		View::render( 'mini-cart-fragment' );
 	}
 
 	/**

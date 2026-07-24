@@ -56,7 +56,7 @@
                 </span>
                 
                 <!-- Search results dropdown -->
-                <div id="search-results" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden">
+                <div id="search-results" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden" aria-live="polite">
                 </div>
             </div>
 

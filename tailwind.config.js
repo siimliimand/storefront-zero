@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     './app/Views/**/*.php',
     './woocommerce/**/*.php',
@@ -27,9 +28,20 @@ module.exports = {
         },
         surface: '#ffffff',
         muted: '#6b7280',
+        darkSurface: '#1a1a2e',
+        darkCard: '#16213e',
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+      },
+      animation: {
+        fadeIn: 'fadeIn 0.3s ease-in-out',
       },
     },
   },

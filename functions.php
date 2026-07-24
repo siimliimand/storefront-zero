@@ -62,6 +62,7 @@ function storefront_zero_enqueue_assets(): void {
 	// Web Components — explicit registration (no glob I/O on every page load).
 	$web_components = [
 		'mobile-drawer',
+		'toast-notification',
 	];
 
 	foreach ( $web_components as $wc_name ) {

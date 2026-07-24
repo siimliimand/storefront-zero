@@ -13,6 +13,8 @@ class ToastNotification extends HTMLElement {
 		// Light DOM — no Shadow DOM, Tailwind classes apply directly.
 		this.className =
 			'fixed bottom-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium transition-opacity duration-300';
+		this.setAttribute('role', 'status');
+		this.setAttribute('aria-live', 'polite');
 
 		if (type === 'error') {
 			this.classList.add('bg-red-600');

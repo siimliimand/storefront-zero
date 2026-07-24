@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 do_action( 'woocommerce_before_cart_table' );
 ?>
 
-<form class="woocommerce-cart-form" action="<?php echo esc_url( wc_get_cart_url() ); ?>" method="post">
+<form id="cart-content" class="woocommerce-cart-form" action="<?php echo esc_url( wc_get_cart_url() ); ?>" method="post">
     <?php do_action( 'woocommerce_before_cart_table' ); ?>
 
     <table class="shop_table shop_table_responsive cart woocommerce-cart-form__contents min-w-full" cellspacing="0">
@@ -48,24 +48,40 @@ do_action( 'woocommerce_before_cart_table' );
                 $thumbnail    = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image(), $cart_item, $cart_item_key );
                 $product_url  = apply_filters( 'woocommerce_cart_item_permalink', $_product->get_permalink(), $cart_item, $cart_item_key );
                 $product_price = apply_filters( 'woocommerce_cart_item_price', WC()->cart->get_product_price( $_product ), $cart_item, $cart_item_key );
-                $product_quantity = apply_filters( 'woocommerce_cart_item_quantity', woocommerce_quantity_input( [
-                    'input_name'  => "cart[{$cart_item_key}][qty]",
-                    'input_value' => $cart_item['quantity'],
-                    'max_text'    => sprintf( esc_html__( 'Max: %s', 'storefront-zero' ), $_product->get_max_purchase_quantity() ),
-                    'min_value'   => 0,
-                    'max_value'   => $_product->get_max_purchase_quantity(),
-                ], $_product, false ), $cart_item, $cart_item_key );
+			$product_quantity = sprintf(
+				'<input type="number" name="quantity" value="%d" min="0" max="%d" '
+				. 'class="w-16 border border-gray-300 rounded px-2 py-1 text-sm text-center" '
+				. 'aria-label="%s" '
+				. 'hx-post="%s" '
+				. 'hx-trigger="change" '
+				. 'hx-vals=\'{"cart_item_key": "%s"}\' '
+				. 'hx-target="#cart-content" '
+				. 'hx-swap="innerHTML">',
+				$cart_item['quantity'],
+				$_product->get_max_purchase_quantity(),
+				esc_attr__( 'Quantity', 'storefront-zero' ),
+				esc_url( home_url( '/htmx-api/cart/update-qty' ) ),
+				esc_attr( $cart_item_key )
+			);
             ?>
                 <tr class="woocommerce-cart-form__cart-item cart_item border-b border-gray-100">
                     <td class="product-remove p-3 text-center">
                         <?php
-                        echo apply_filters( 'woocommerce_cart_item_remove_link', sprintf(
-                            '<a href="%s" class="remove text-red-500 hover:text-red-700" aria-label="%s" data-product_id="%s" data-cart_item_key="%s">&times;</a>',
-                            esc_url( wc_get_cart_remove_url( $cart_item_key ) ),
-                            esc_html__( 'Remove this item', 'storefront-zero' ),
-                            esc_attr( $product_id ),
-                            esc_attr( $cart_item_key )
-                        ), $cart_item_key );
+					echo apply_filters( 'woocommerce_cart_item_remove_link', sprintf(
+						'<button type="button" '
+						. 'class="remove text-red-500 hover:text-red-700 bg-transparent border-none cursor-pointer p-0" '
+						. 'aria-label="%s" '
+						. 'hx-delete="%s" '
+						. 'hx-vals=\'{"cart_item_key": "%s"}\' '
+						. 'hx-target="#cart-content" '
+						. 'hx-swap="innerHTML" '
+						. 'hx-confirm="%s">'
+						. '&times;</button>',
+						esc_html__( 'Remove this item', 'storefront-zero' ),
+						esc_url( home_url( '/htmx-api/cart/remove' ) ),
+						esc_attr( $cart_item_key ),
+						esc_html__( 'Are you sure you want to remove this item?', 'storefront-zero' )
+					), $cart_item_key );
                         ?>
                     </td>
 

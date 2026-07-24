@@ -26,10 +26,10 @@ function storefront_zero_enqueue_assets(): void {
 		(string) filemtime( __DIR__ . '/assets/css/main.css' )
 	);
 
-	// HTMX from CDN — loaded in footer.
+	// HTMX — local vendor bundle for reliability and GDPR compliance.
 	wp_enqueue_script(
 		'htmx',
-		'https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js',
+		get_template_directory_uri() . '/assets/js/vendor/htmx.min.js',
 		[],
 		'1.9.10',
 		true

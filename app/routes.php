@@ -25,10 +25,11 @@ Flight::before( 'start', function () {
 		$nonce = $_SERVER['HTTP_X_WP_NONCE'] ?? '';
 
 		if ( ! wp_verify_nonce( $nonce, 'storefront_zero_htmx' ) ) {
-			Flight::halt( 403, wp_json_encode( [
+			$message = wp_json_encode( [
 				'error'   => 'Invalid Security Token',
 				'message' => 'The request could not be authenticated. Please refresh the page and try again.',
-			] ) );
+			] );
+			Flight::halt( 403, is_string( $message ) ? $message : '' );
 		}
 	}
 } );
@@ -41,4 +42,27 @@ Flight::route( 'GET /search', function () {
 // POST /cart/add — Add product to cart.
 Flight::route( 'POST /cart/add', function () {
 	CartController::addToCart();
+} );
+
+// GET /nonce — Fresh nonce for cache-safe requests.
+Flight::route( 'GET /nonce', function () {
+	header( 'Content-Type: application/json' );
+	echo wp_json_encode( [
+		'nonce' => wp_create_nonce( 'storefront_zero_htmx' ),
+	] );
+} );
+
+// GET /cart/mini — Mini-cart HTML fragment.
+Flight::route( 'GET /cart/mini', function () {
+	CartController::renderMiniCart();
+} );
+
+// POST /cart/update-qty — Update cart item quantity.
+Flight::route( 'POST /cart/update-qty', function () {
+	CartController::updateQuantity();
+} );
+
+// DELETE /cart/remove — Remove item from cart.
+Flight::route( 'DELETE /cart/remove', function () {
+	CartController::removeItem();
 } );

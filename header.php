@@ -56,12 +56,21 @@
                 </span>
                 
                 <!-- Search results dropdown -->
-                <div id="search-results" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden">
+                <div id="search-results" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden" aria-live="polite">
                 </div>
             </div>
 
             <!-- Navigation -->
             <nav class="flex items-center space-x-4">
+                <!-- Mini-cart with live HTMX sync -->
+                <div id="mini-cart-container"
+                     hx-get="/htmx-api/cart/mini"
+                     hx-trigger="load, cartUpdated from:body"
+                     hx-swap="outerHTML"
+                     aria-live="polite"
+                     class="relative">
+                </div>
+
                 <mobile-drawer>
                     <button data-drawer-toggle class="p-2 text-gray-600 hover:text-gray-900 lg:hidden">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

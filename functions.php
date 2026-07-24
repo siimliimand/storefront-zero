@@ -62,6 +62,7 @@ function storefront_zero_enqueue_assets(): void {
 	// Web Components — explicit registration (no glob I/O on every page load).
 	$web_components = [
 		'mobile-drawer',
+		'toast-notification',
 	];
 
 	foreach ( $web_components as $wc_name ) {
@@ -173,18 +174,29 @@ add_action( 'widgets_init', 'storefront_zero_widgets_init' );
  *
  * Only handles requests under /htmx-api — all other URLs proceed through
  * the normal WordPress template hierarchy, preserving Yoast SEO metadata.
+ * Request URI is normalized against home_url() via parse_url() so both root
+ * and subdirectory WordPress installs are handled correctly.
  *
  * @return void
  */
 function storefront_zero_flight_init(): void {
 	$request_uri = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) );
-	if ( strpos( $request_uri, '/htmx-api' ) !== 0 ) {
+
+	// Normalize against the site root so subdirectory installs work.
+	$site_path = rtrim( (string) parse_url( home_url(), PHP_URL_PATH ), '/' );
+
+	// Strip the site path prefix to get the relative URI.
+	$relative_uri = '/' . ltrim( substr( $request_uri, strlen( $site_path ) ), '/' );
+
+	if ( false === strpos( $relative_uri, '/htmx-api' ) ) {
 		return;
 	}
 
 	define( 'FLIGHT_START', true );
 
-	Flight::set( 'base_url', '/htmx-api' );
+	// Build the full prefix (site path + htmx-api) for Flight routing.
+	$api_prefix = $site_path . '/htmx-api';
+	Flight::set( 'base_url', $api_prefix );
 
 	require_once __DIR__ . '/app/routes.php';
 

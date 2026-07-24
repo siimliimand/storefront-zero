@@ -22,9 +22,9 @@ class ProductController
      * Live product search via HTMX.
      *
      * Sanitizes the query, queries WooCommerce for matching published products,
-     * and renders the search-results view template. Results are cached using
-     * a transient with a 60-second TTL to reduce redundant database queries
-     * for repeated searches.
+     * and renders the search-results view template. Product IDs are cached in
+     * a transient with a 60-second TTL; full WC_Product objects are hydrated
+     * on each request to avoid serialization issues across WC version changes.
      *
      * @return void
      */
@@ -43,15 +43,20 @@ class ProductController
         $products  = get_transient( $cache_key );
 
         if ( false === $products ) {
-            $products = wc_get_products( [
+            $product_ids = wc_get_products( [
                 'post_type'      => 'product',
                 'post_status'    => 'publish',
                 'posts_per_page' => 5,
                 's'              => $query,
+                'return'         => 'ids',
             ] );
 
-            set_transient( $cache_key, $products, 60 );
+            set_transient( $cache_key, $product_ids, 60 );
+            $products = $product_ids;
         }
+
+        // Hydrate product IDs into WC_Product objects.
+        $products = array_filter( array_map( static fn( int $id ): ?\WC_Product => wc_get_product( $id ), $products ) );
 
         View::render( 'search-results', [
             'products' => $products,

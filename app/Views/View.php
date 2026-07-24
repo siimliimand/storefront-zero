@@ -8,8 +8,8 @@ class View
     /**
      * Render a view template with the given data.
      *
-     * @param string $view View name relative to app/Views/ (without .php extension).
-     * @param array  $data Variables to extract into the template scope.
+     * @param string         $view View name relative to app/Views/ (without .php extension).
+     * @param array<string, mixed> $data Variables to extract into the template scope.
      *
      * @return void
      *
@@ -35,7 +35,21 @@ class View
         extract( $data, EXTR_SKIP );
 
         ob_start();
-        include $path;
-        echo ob_get_clean();
+        try {
+            include $path;
+            echo ob_get_clean();
+        } catch ( \Throwable $e ) {
+            while ( ob_get_level() ) {
+                ob_end_clean();
+            }
+
+            status_header( 500 );
+
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                echo '<!-- View rendering error: ' . esc_html( $e->getMessage() ) . ' in ' . esc_html( $e->getFile() ) . ' -->';
+            } else {
+                echo '<!-- View rendering error -->';
+            }
+        }
     }
 }

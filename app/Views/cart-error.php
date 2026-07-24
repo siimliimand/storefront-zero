@@ -6,6 +6,8 @@
  *
  * @package Storefront_Zero
  */
+
+/** @var string $message */
 ?>
 <div class="cart-error p-4 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
     <p><?php echo esc_html( $message ); ?></p>

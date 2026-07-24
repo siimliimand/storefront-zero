@@ -1,0 +1,25 @@
+parameters:
+    level: 8
+    paths:
+        - app/
+        - functions.php
+    excludePaths:
+        - vendor/
+        - node_modules/
+        - assets/
+        - woocommerce/
+        - tests/
+    stubFiles:
+        - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+        - app/woocommerce-stubs.php
+
+    # WordPress dynamic properties and hooks
+    ignoreErrors:
+        - '#Function wc_get_product not found\.#'
+        - '#Function wc_get_products not found\.#'
+        - '#Function wc_get_cart_url not found\.#'
+        - '#Function WC not found\.#'
+        - '#Function is_product not found\.#'
+
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon

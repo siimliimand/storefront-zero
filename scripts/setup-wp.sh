@@ -80,23 +80,6 @@ wp option get woocommerce_shop_page_id --path="$WP_DIR" --allow-root 2>/dev/null
 # Set permalink structure
 wp rewrite structure '/%postname%/' --path="$WP_DIR" --allow-root 2>/dev/null || true
 
-echo "==> Starting PHP built-in server on port ${WP_PORT}"
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$WP_DIR"
-php -S "0.0.0.0:${WP_PORT}" "$SCRIPT_DIR/router.php" > /tmp/wp-server.log 2>&1 &
-WP_PID=$!
-echo "WordPress PID: ${WP_PID}"
-
-# Wait for server to be ready
-echo "==> Waiting for WordPress to be ready..."
-for i in $(seq 1 30); do
-  if curl -sf "http://localhost:${WP_PORT}/" > /dev/null 2>&1; then
-    echo "==> WordPress is ready at ${WP_URL}"
-    exit 0
-  fi
-  sleep 1
-done
-
-echo "==> ERROR: WordPress failed to start"
-cat /tmp/wp-server.log
-exit 1
+echo "==> WordPress provisioning complete at ${WP_DIR}"
+echo "==> To start the server: php -S 0.0.0.0:${WP_PORT} scripts/router.php (from WP_DIR)"
+echo "==> Or use DDEV locally: ddev start"

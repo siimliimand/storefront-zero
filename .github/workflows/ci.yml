@@ -111,8 +111,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Provision WordPress + WooCommerce
-        run: |
-          bash scripts/setup-wp.sh
+        run: bash scripts/setup-wp.sh
         env:
           WP_DIR: /tmp/wordpress
           WP_PORT: 8080
@@ -121,8 +120,27 @@ jobs:
           DB_USER: root
           DB_PASS: root
 
-      - name: Run Playwright tests
-        run: npm run test:e2e
+      # PHP built-in server must run in the same step as tests (background
+      # processes are killed when a step ends). Start it here, then run tests.
+      - name: Start WordPress server + Run E2E tests
+        run: |
+          cd /tmp/wordpress
+          SCRIPT_DIR="$(pwd)/../../storefront-zero/scripts"
+          php -S "0.0.0.0:8080" "$SCRIPT_DIR/router.php" > /tmp/wp-server.log 2>&1 &
+          WP_PID=$!
+          echo "WordPress server PID: $WP_PID"
+
+          # Wait for server to be ready
+          for i in $(seq 1 20); do
+            if curl -sf http://localhost:8080/ > /dev/null 2>&1; then
+              echo "WordPress is ready"
+              break
+            fi
+            sleep 1
+          done
+
+          cd "$GITHUB_WORKSPACE"
+          npm run test:e2e
         env:
           CI: true
 

@@ -18,3 +18,16 @@ document.addEventListener('htmx:afterSwap', function(evt) {
         }
     }));
 });
+
+/**
+ * Web Component registration confirmation
+ * Logs registered components on load for debugging.
+ * Components self-register via customElements.define() in their own files.
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const components = document.querySelectorAll('mobile-drawer, cart-drawer, search-overlay');
+    if (components.length > 0) {
+        console.log('[Storefront Zero] Web components initialized:',
+            Array.from(components).map(el => el.tagName.toLowerCase()).join(', '));
+    }
+});

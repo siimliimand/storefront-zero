@@ -20,7 +20,7 @@ $attributes = $product->get_attributes();
 		<table class="w-full border-collapse">
 			<tbody>
 				<?php foreach ( $attributes as $attribute ) : ?>
-					<?php if ( $attribute->is_visible() ) : ?>
+					<?php if ( $attribute->get_visible() ) : ?>
 						<tr class="border-b border-gray-200 dark:border-gray-700">
 							<th class="py-3 pr-6 text-left font-semibold text-gray-900 dark:text-gray-100 w-1/3">
 								<?php echo esc_html( wc_attribute_label( $attribute->get_name() ) ); ?>

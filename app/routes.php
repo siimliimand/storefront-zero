@@ -22,7 +22,7 @@ Flight::before( 'start', function () {
 	if ( in_array( strtoupper( $method ), [ 'POST', 'PUT', 'DELETE' ], true ) ) {
 		$nonce = $_SERVER['HTTP_X_WP_NONCE'] ?? '';
 
-		if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'storefront_zero_htmx' ) ) {
 			Flight::halt( 403, wp_json_encode( [
 				'error'   => 'Invalid Security Token',
 				'message' => 'The request could not be authenticated. Please refresh the page and try again.',

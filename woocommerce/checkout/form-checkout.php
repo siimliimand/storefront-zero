@@ -42,11 +42,11 @@ if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_requir
 
 	<?php do_action( 'woocommerce_checkout_before_order_review_heading' ); ?>
 
-	<h3 id="order_review_heading" class="text-xl font-semibold text-gray-900 mb-4"><?php esc_html_e( 'Your order', 'storefront-zero' ); ?></h3>
+	<h3 id="order_review_heading" class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4"><?php esc_html_e( 'Your order', 'storefront-zero' ); ?></h3>
 
 	<?php do_action( 'woocommerce_checkout_before_order_review' ); ?>
 
-	<div id="order_review" class="woocommerce-checkout-review-order bg-gray-50 border border-gray-200 rounded-lg p-6">
+	<div id="order_review" class="woocommerce-checkout-review-order bg-gray-50 dark:bg-darkCard border border-gray-200 dark:border-gray-700 rounded-lg p-6">
 		<?php do_action( 'woocommerce_checkout_order_review' ); ?>
 	</div>
 

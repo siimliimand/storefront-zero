@@ -62,13 +62,13 @@ if ( $product->is_in_stock() ) :
 			type="submit"
 			name="add-to-cart"
 			value="<?php echo esc_attr( $product_id ); ?>"
-			class="single_add_to_cart_button button alt px-6 py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed <?php echo esc_attr( wc_wp_theme_get_element_class_name( 'button' ) ? ' ' . wc_wp_theme_get_element_class_name( 'button' ) : '' ); ?>"
+			class="single_add_to_cart_button button alt px-6 py-2 bg-brand-600 text-white font-semibold rounded hover:bg-brand-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed <?php echo esc_attr( wc_wp_theme_get_element_class_name( 'button' ) ? ' ' . wc_wp_theme_get_element_class_name( 'button' ) : '' ); ?>"
 		>
 			<?php echo esc_html( $product->single_add_to_cart_text() ); ?>
 		</button>
 
 		<span id="add-to-cart-spinner" class="htmx-indicator inline-block ml-2">
-			<span class="inline-block w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></span>
+			<span class="inline-block w-5 h-5 border-2 border-gray-300 dark:border-gray-600 border-t-brand-600 rounded-full animate-spin"></span>
 		</span>
 
 		<?php do_action( 'woocommerce_after_add_to_cart_button' ); ?>

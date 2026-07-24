@@ -27,9 +27,9 @@ do_action( 'woocommerce_before_account_navigation' );
 			<li class="<?php echo esc_attr( $item_classes ); ?>">
 				<a
 					href="<?php echo esc_url( wc_get_account_endpoint_url( $endpoint ) ); ?>"
-					class="block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors <?php echo $is_current
-						? 'bg-indigo-50 text-indigo-700 font-semibold'
-						: 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'; ?>"
+				class="block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors <?php echo $is_current
+					? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-semibold'
+					: 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'; ?>"
 					<?php echo $is_current ? 'aria-current="page"' : ''; ?>
 				>
 					<?php echo esc_html( $label ); ?>

@@ -21,11 +21,11 @@ $attributes = $product->get_attributes();
 			<tbody>
 				<?php foreach ( $attributes as $attribute ) : ?>
 					<?php if ( $attribute->is_visible() ) : ?>
-						<tr class="border-b border-gray-200">
-							<th class="py-3 pr-6 text-left font-semibold text-gray-900 w-1/3">
+						<tr class="border-b border-gray-200 dark:border-gray-700">
+							<th class="py-3 pr-6 text-left font-semibold text-gray-900 dark:text-gray-100 w-1/3">
 								<?php echo esc_html( wc_attribute_label( $attribute->get_name() ) ); ?>
 							</th>
-							<td class="py-3 text-gray-700">
+							<td class="py-3 text-gray-700 dark:text-gray-300">
 								<?php
 								$values = array();
 
@@ -49,7 +49,7 @@ $attributes = $product->get_attributes();
 			</tbody>
 		</table>
 	<?php else : ?>
-		<p class="text-gray-500 italic">
+		<p class="text-gray-500 dark:text-gray-400 italic">
 			<?php esc_html_e( 'No additional information available.', 'storefront-zero' ); ?>
 		</p>
 	<?php endif; ?>

@@ -10,7 +10,7 @@
     "require-dev": {
         "pestphp/pest": "^2.0",
         "pestphp/pest-plugin-arch": "^2.0",
-        "php-stubs/woocommerce-stubs": "^4.0",
+        "php-stubs/woocommerce-stubs": "^6.5",
         "phpstan/phpstan": "^2.0",
         "szepeviktor/phpstan-wordpress": "^2.0"
     },

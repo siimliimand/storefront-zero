@@ -21,7 +21,7 @@ get_header();
 				printf(
 					/* translators: %s: search query */
 					esc_html__( 'Search results for: %s', 'storefront-zero' ),
-					'<span class="text-blue-600">' . esc_html( get_search_query() ) . '</span>'
+					'<span class="text-brand-600">' . esc_html( get_search_query() ) . '</span>'
 				);
 				?>
 			</h1>
@@ -37,7 +37,7 @@ get_header();
 				<?php else : ?>
 					<article <?php post_class( 'mb-8 pb-8 border-b border-gray-200' ); ?>>
 						<h2 class="entry-title text-xl font-semibold mb-2">
-							<a href="<?php the_permalink(); ?>" class="text-blue-600 hover:text-blue-800 hover:underline">
+							<a href="<?php the_permalink(); ?>" class="text-brand-600 hover:text-brand-800 hover:underline">
 								<?php the_title(); ?>
 							</a>
 						</h2>

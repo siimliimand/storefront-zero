@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 if ( empty( $products ) ) :
 ?>
-<div class="search-results-empty p-4 text-center text-gray-500">
+<div class="search-results-empty p-4 text-center text-gray-500 dark:text-gray-400">
     <p>
         <?php
         echo esc_html(
@@ -39,7 +39,7 @@ if ( empty( $products ) ) :
             : '';
     ?>
     <a href="<?php echo esc_url( $permalink ); ?>"
-       class="search-result-item flex items-center gap-3 p-2 hover:bg-gray-100 rounded">
+       class="search-result-item flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded dark:text-gray-100">
         <?php if ( $image_url ) : ?>
             <img src="<?php echo esc_url( $image_url ); ?>"
                  alt="<?php echo esc_attr( $product->get_name() ); ?>"
@@ -50,7 +50,7 @@ if ( empty( $products ) ) :
             <span class="block font-medium text-sm">
                 <?php echo esc_html( $product->get_name() ); ?>
             </span>
-            <span class="block text-sm text-gray-600">
+            <span class="block text-sm text-gray-600 dark:text-gray-400">
                 <?php echo wp_kses_post( $product->get_price_html() ); ?>
             </span>
         </div>

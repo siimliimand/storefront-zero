@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</h1>
 	</header>
 
-	<div class="entry-content text-gray-700">
+	<div class="entry-content text-gray-700 dark:text-gray-300">
 		<?php
 		the_content();
 

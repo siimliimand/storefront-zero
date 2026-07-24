@@ -21,12 +21,12 @@
     <?php esc_html_e( 'Skip to content', 'storefront-zero' ); ?>
 </a>
 
-<header id="masthead" class="site-header bg-white shadow-sm">
+<header id="masthead" class="site-header bg-white dark:bg-darkSurface shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
             <!-- Site branding -->
             <div class="flex-shrink-0">
-                <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="text-xl font-bold text-gray-900">
+                <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="text-xl font-bold text-gray-900 dark:text-gray-100">
                     <?php if ( has_custom_logo() ) : ?>
                         <?php the_custom_logo(); ?>
                     <?php else : ?>
@@ -42,7 +42,7 @@
                         type="search"
                         name="s"
                         placeholder="Search products..."
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white dark:bg-darkCard text-gray-900 dark:text-gray-100"
                         hx-get="/htmx-api/search"
                         hx-trigger="keyup changed delay:300ms, search"
                         hx-target="#search-results"
@@ -58,7 +58,7 @@
                     </span>
                     
                     <!-- Search results dropdown -->
-                    <div id="search-results" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden" aria-live="polite">
+                    <div id="search-results" class="absolute z-50 w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg mt-1 hidden" aria-live="polite">
                     </div>
                 </form>
             </div>
@@ -78,7 +78,7 @@
                 </div>
 
                 <mobile-drawer>
-                    <button data-drawer-toggle aria-label="<?php esc_attr_e( 'Open navigation menu', 'storefront-zero' ); ?>" class="p-2 text-gray-600 hover:text-gray-900 lg:hidden">
+                    <button data-drawer-toggle aria-label="<?php esc_attr_e( 'Open navigation menu', 'storefront-zero' ); ?>" class="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 lg:hidden">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>

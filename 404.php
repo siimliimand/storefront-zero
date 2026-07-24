@@ -33,7 +33,7 @@ nocache_headers();
 						type="search"
 						name="s"
 						placeholder="<?php esc_attr_e( 'Search products...', 'storefront-zero' ); ?>"
-						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
 						hx-get="/htmx-api/search"
 						hx-trigger="keyup changed delay:300ms, search"
 						hx-target="#search-results-404"

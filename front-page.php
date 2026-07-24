@@ -97,7 +97,7 @@ get_header();
 
 									<div class="p-4">
 										<h3 class="font-semibold text-gray-900 mb-2">
-											<a href="<?php echo esc_url( $product_url ); ?>" class="hover:text-blue-600 transition-colors">
+											<a href="<?php echo esc_url( $product_url ); ?>" class="hover:text-brand-600 transition-colors">
 												<?php echo esc_html( $product_title ); ?>
 											</a>
 										</h3>
@@ -150,7 +150,7 @@ get_header();
 
 									<div class="p-4">
 										<h3 class="font-semibold text-gray-900 mb-2">
-											<a href="<?php the_permalink(); ?>" class="hover:text-blue-600 transition-colors">
+											<a href="<?php the_permalink(); ?>" class="hover:text-brand-600 transition-colors">
 												<?php the_title(); ?>
 											</a>
 										</h3>

@@ -6,9 +6,12 @@ A minimal, performance-first WordPress/WooCommerce theme.
 
 - **Flight PHP routing** — lightweight HTTP layer for HTMX fragment endpoints
 - **HTMX dynamic fragments** — server-rendered partial updates without full page reloads
-- **Web Components** — encapsulated interactive UI widgets
+- **MVC architecture** — controllers in `app/Controllers/`, views in `app/Views/`
+- **Web Components** — encapsulated interactive UI widgets with ARIA support
 - **Tailwind CSS** — utility-first styling with build pipeline
 - **WooCommerce integration** — full storefront, cart, checkout, and account support
+- **Local HTMX** — bundled vendor script, no CDN dependency
+- **Nonce-scoped security** — dedicated `storefront_zero_htmx` nonce for HTMX requests
 - **Lighthouse 95+ target** — performance-first architecture and defaults
 
 ## Requirements
@@ -37,6 +40,43 @@ A minimal, performance-first WordPress/WooCommerce theme.
 
 4. Activate the theme in WordPress admin → Appearance → Themes.
 
+## Project Structure
+
+```
+storefront-zero/
+├── app/
+│   ├── Controllers/          # Flight PHP route handlers
+│   │   ├── CartController.php
+│   │   └── ProductController.php
+│   ├── Views/                # View templates rendered by ThemeApp\View
+│   │   ├── View.php          # Static view renderer
+│   │   ├── cart-error.php
+│   │   ├── mini-cart.php
+│   │   └── search-results.php
+│   └── routes.php            # Flight route definitions + nonce middleware
+├── assets/
+│   ├── css/
+│   │   ├── input.css         # Tailwind directives
+│   │   └── main.css          # Compiled output
+│   └── js/
+│       ├── app.js            # HTMX config, a11y handlers
+│       ├── vendor/
+│       │   └── htmx.min.js   # Local HTMX v1.9.10
+│       └── web-components/
+│           └── mobile-drawer.js
+├── template-parts/           # WordPress loop templates
+│   ├── content.php           # Blog post display
+│   ├── content-none.php      # No posts found
+│   └── content-page.php      # Page display
+├── woocommerce/              # WooCommerce template overrides
+├── functions.php             # Theme setup, enqueues, Flight init
+├── header.php                # Site header with HTMX search
+├── footer.php                # Site footer
+├── index.php                 # Main template (WordPress loop)
+├── sidebar.php               # Widget area
+└── style.css                 # Theme metadata
+```
+
 ## Development
 
 Run Tailwind CSS in watch mode for live-reloading styles:
@@ -45,13 +85,68 @@ Run Tailwind CSS in watch mode for live-reloading styles:
 npm run dev
 ```
 
+### MVC Architecture
+
+The theme uses a lightweight MVC pattern:
+
+- **Controllers** (`app/Controllers/`) handle request logic and delegate rendering to views.
+- **Views** (`app/Views/`) are plain PHP templates rendered via `ThemeApp\View::render($name, $data)`.
+- **Routes** (`app/routes.php`) map Flight PHP routes to controller methods.
+
+Example:
+
+```php
+// In a controller
+use ThemeApp\View;
+
+View::render('search-results', [
+    'products' => $products,
+    'query'    => $query,
+]);
+```
+
+### WordPress Template Hierarchy
+
+Standard WordPress templates live in `template-parts/` and follow the WordPress loop convention. The `index.php` loads them via `get_template_part()`.
+
 ### Flight PHP Routes
 
-Flight PHP handles HTMX fragment requests at `/htmx-api/*`. Controllers in `src/` return HTML fragments consumed by HTMX on the frontend.
+Flight PHP handles HTMX fragment requests at `/htmx-api/*`. All mutating requests (POST, PUT, DELETE) are verified against the `storefront_zero_htmx` nonce via middleware in `app/routes.php`.
+
+| Method | Route | Controller | Description |
+|---|---|---|---|
+| GET | `/search` | `ProductController::liveSearch()` | Live product search |
+| POST | `/cart/add` | `CartController::addToCart()` | Add product to cart |
 
 ### HTMX Fragments
 
 HTMX attributes trigger requests to the Flight PHP routes. Each route returns a partial HTML response that HTMX swaps into the DOM — no full page reloads needed.
+
+HTMX is loaded locally from `assets/js/vendor/htmx.min.js` (v1.9.10) to avoid CDN dependencies.
+
+### Web Components
+
+The theme uses web components for interactive widgets. Each component is self-registering via `customElements.define()` in its own file under `assets/js/web-components/`.
+
+Current components:
+- `<mobile-drawer>` — mobile navigation with ARIA attributes, Escape key support, and focus management
+
+Web components are registered explicitly in `functions.php` (no `glob()` scan at runtime).
+
+### Accessibility
+
+All interactive components include:
+- ARIA attributes (`aria-expanded`, `aria-controls`, `role`)
+- Keyboard navigation (`Escape` key handlers)
+- Focus management (focus trapping in drawers, focus return on dismiss)
+- Outside-click dismiss for dropdowns
+
+## Security
+
+- **Nonce scoping**: HTMX requests use a dedicated `storefront_zero_htmx` nonce (not the default `wp_rest` nonce).
+- **Middleware verification**: All mutating HTMX requests (POST, PUT, DELETE) pass through Flight middleware that verifies the nonce.
+- **Input validation**: Server-side sanitization via `sanitize_text_field()`, `absint()`, and `wp_unslash()`.
+- **Output escaping**: WordPress escaping functions (`esc_html()`, `esc_url()`, `esc_attr()`, `wp_kses_post()`) used throughout.
 
 ## Plugin Compatibility
 

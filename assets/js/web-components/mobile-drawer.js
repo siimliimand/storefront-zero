@@ -21,7 +21,8 @@ class MobileDrawer extends HTMLElement {
 
         if (this._toggle && this._menu) {
             // Generate unique IDs for aria-controls.
-            const menuId = 'drawer-menu-' + Math.random().toString(36).slice(2, 9);
+            const index = document.querySelectorAll('mobile-drawer').length;
+            const menuId = 'drawer-menu-' + index;
             this._menu.setAttribute('id', menuId);
             this._toggle.setAttribute('aria-controls', menuId);
             this._toggle.setAttribute('aria-expanded', 'false');

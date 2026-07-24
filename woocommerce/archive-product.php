@@ -7,7 +7,7 @@
  * @package Storefront_Zero
  */
 
-get_header( 'shop' );
+get_header();
 ?>
 
 <div id="primary" class="content-area">
@@ -41,4 +41,4 @@ get_header( 'shop' );
 </div>
 
 <?php
-get_footer( 'shop' );
+get_footer();

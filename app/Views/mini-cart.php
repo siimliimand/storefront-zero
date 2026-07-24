@@ -14,7 +14,7 @@ $subtotal   = $cart->get_cart_subtotal();
 <div class="mini-cart" id="mini-cart">
     <div class="mini-cart-header flex justify-between items-center p-3 border-b">
         <span class="font-semibold"><?php esc_html_e( 'Shopping Cart', 'storefront-zero' ); ?></span>
-        <span class="text-sm text-gray-600"><?php echo esc_html( $item_count ); ?> item(s)</span>
+        <span class="text-sm text-gray-600"><?php echo esc_html( sprintf( _n( '%s item', '%s items', $item_count, 'storefront-zero' ), $item_count ) ); ?></span>
     </div>
 
     <?php if ( 0 === $item_count ) : ?>

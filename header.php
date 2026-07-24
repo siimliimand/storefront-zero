@@ -16,14 +16,21 @@
 
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-md focus:outline-none">
+    <?php esc_html_e( 'Skip to content', 'storefront-zero' ); ?>
+</a>
 
 <header id="masthead" class="site-header bg-white shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
             <!-- Site branding -->
             <div class="flex-shrink-0">
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="text-xl font-bold text-gray-900">
-                    <?php bloginfo('name'); ?>
+                <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="text-xl font-bold text-gray-900">
+                    <?php if ( has_custom_logo() ) : ?>
+                        <?php the_custom_logo(); ?>
+                    <?php else : ?>
+                        <?php echo esc_html( get_bloginfo( 'name' ) ); ?>
+                    <?php endif; ?>
                 </a>
             </div>
 
@@ -39,8 +46,9 @@
                     hx-target="#search-results"
                     hx-indicator=".search-spinner"
                     autocomplete="off"
+                    aria-label="<?php esc_attr_e( 'Search products', 'storefront-zero' ); ?>"
                 />
-                <span class="search-spinner htmx-indicator absolute right-3 top-1/2 -translate-y-1/2">
+                <span class="search-spinner htmx-indicator absolute right-3 top-1/2 -translate-y-1/2" role="status" aria-label="<?php esc_attr_e( 'Searching...', 'storefront-zero' ); ?>">
                     <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -61,9 +69,15 @@
                         </svg>
                     </button>
                     <nav data-drawer-menu class="hidden lg:flex lg:space-x-4">
-                        <a href="<?php echo esc_url(home_url('/shop')); ?>" class="text-gray-600 hover:text-gray-900">Shop</a>
-                        <a href="<?php echo esc_url(home_url('/cart')); ?>" class="text-gray-600 hover:text-gray-900">Cart</a>
-                        <a href="<?php echo esc_url(home_url('/checkout')); ?>" class="text-gray-600 hover:text-gray-900">Checkout</a>
+                        <?php
+                        wp_nav_menu( [
+                            'theme_location' => 'primary',
+                            'container'      => false,
+                            'menu_class'     => 'flex space-x-4',
+                            'fallback_cb'    => false,
+                            'depth'          => 1,
+                        ] );
+                        ?>
                     </nav>
                 </mobile-drawer>
             </nav>

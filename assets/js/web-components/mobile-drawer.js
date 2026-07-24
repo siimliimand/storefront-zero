@@ -1,7 +1,8 @@
 /**
  * <mobile-drawer> Web Component
  *
- * Toggles a mobile navigation drawer with full ARIA support.
+ * Toggles a mobile navigation drawer. Relies on <nav> landmark
+ * semantics for accessibility; toggle button uses aria-controls/expanded.
  * Uses Light DOM so Tailwind classes apply natively.
  *
  * Usage:
@@ -20,16 +21,11 @@ class MobileDrawer extends HTMLElement {
 
         if (this._toggle && this._menu) {
             // Generate unique IDs for aria-controls.
-            const menuId = 'drawer-menu-' + Math.random().toString(36).slice(2, 9);
+            const index = document.querySelectorAll('mobile-drawer').length;
+            const menuId = 'drawer-menu-' + index;
             this._menu.setAttribute('id', menuId);
             this._toggle.setAttribute('aria-controls', menuId);
             this._toggle.setAttribute('aria-expanded', 'false');
-            this._menu.setAttribute('role', 'menu');
-
-            // Add role="menuitem" to links.
-            this._menu.querySelectorAll('a').forEach(function (link) {
-                link.setAttribute('role', 'menuitem');
-            });
 
             this._handleToggle = this._handleToggle.bind(this);
             this._handleKeyDown = this._handleKeyDown.bind(this);

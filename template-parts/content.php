@@ -21,7 +21,7 @@
 	</div>
 
 	<footer class="entry-footer mt-2">
-		<a href="<?php the_permalink(); ?>" class="text-blue-600 hover:underline">
+		<a href="<?php the_permalink(); ?>" class="text-blue-600 hover:underline" aria-label="<?php printf( esc_attr__( 'Read more: %s', 'storefront-zero' ), get_the_title() ); ?>">
 			Read more &rarr;
 		</a>
 	</footer>

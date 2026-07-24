@@ -25,6 +25,12 @@ document.addEventListener('htmx:afterSwap', function(evt) {
         $(evt.detail.target).find('.variations_form').wc_variation_form();
         $(evt.detail.target).filter('.variations_form').wc_variation_form();
     }
+
+    // Toggle search results visibility based on content.
+    if (evt.detail.target.id === 'search-results') {
+        var hasContent = evt.detail.target.innerHTML.trim() !== '';
+        evt.detail.target.classList.toggle('hidden', !hasContent);
+    }
 });
 
 /**
@@ -33,7 +39,7 @@ document.addEventListener('htmx:afterSwap', function(evt) {
  * Components self-register via customElements.define() in their own files.
  */
 document.addEventListener('DOMContentLoaded', function() {
-    const components = document.querySelectorAll('mobile-drawer, cart-drawer, search-overlay');
+    const components = document.querySelectorAll('mobile-drawer');
     if (components.length > 0) {
         console.log('[Storefront Zero] Web components initialized:',
             Array.from(components).map(el => el.tagName.toLowerCase()).join(', '));

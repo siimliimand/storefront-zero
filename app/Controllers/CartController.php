@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Cart Controller
  *
@@ -19,6 +21,8 @@ class CartController
 	 */
 	public static function addToCart(): void
 	{
+		header( 'Content-Type: text/html; charset=utf-8' );
+
 		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
 		$quantity   = isset( $_POST['quantity'] ) ? absint( $_POST['quantity'] ) : 1;
 
@@ -45,6 +49,8 @@ class CartController
 	 */
 	public static function renderMiniCart(): void
 	{
+		header( 'Content-Type: text/html; charset=utf-8' );
+
 		View::render( 'mini-cart' );
 	}
 }

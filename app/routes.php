@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Flight PHP Route Definitions
  *

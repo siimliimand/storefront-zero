@@ -13,6 +13,11 @@ declare(strict_types=1);
 require_once __DIR__ . '/vendor/autoload.php';
 
 /**
+ * Theme version for cache busting.
+ */
+define( 'SZ_HTMX_VERSION', '1.9.10' );
+
+/**
  * Enqueue theme assets: Tailwind CSS, HTMX, app JS, and Web Components.
  *
  * @return void
@@ -31,7 +36,7 @@ function storefront_zero_enqueue_assets(): void {
 		'htmx',
 		get_template_directory_uri() . '/assets/js/vendor/htmx.min.js',
 		[],
-		'1.9.10',
+		SZ_HTMX_VERSION,
 		true
 	);
 
@@ -124,6 +129,28 @@ function storefront_zero_disable_emoji(): void {
 add_action( 'init', 'storefront_zero_disable_emoji' );
 
 /**
+ * Dequeue unused WooCommerce scripts and styles on non-product pages.
+ *
+ * Removes select2, zoom, and prettyPhoto on pages that don't need them.
+ *
+ * @return void
+ */
+function storefront_zero_dequeue_unused_wc_assets(): void {
+	if ( is_product() ) {
+		return;
+	}
+
+	wp_dequeue_script( 'wc-add-to-cart-variation' );
+	wp_dequeue_script( 'wc-single-product' );
+	wp_dequeue_script( 'zoom' );
+	wp_dequeue_script( 'select2' );
+	wp_dequeue_style( 'select2' );
+	wp_dequeue_script( 'prettyPhoto' );
+	wp_dequeue_style( 'prettyPhoto' );
+}
+add_action( 'wp_enqueue_scripts', 'storefront_zero_dequeue_unused_wc_assets', 99 );
+
+/**
  * Register the Sidebar widget area.
  *
  * @return void
@@ -150,7 +177,8 @@ add_action( 'widgets_init', 'storefront_zero_widgets_init' );
  * @return void
  */
 function storefront_zero_flight_init(): void {
-	if ( strpos( $_SERVER['REQUEST_URI'], '/htmx-api' ) !== 0 ) {
+	$request_uri = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) );
+	if ( strpos( $request_uri, '/htmx-api' ) !== 0 ) {
 		return;
 	}
 
@@ -164,3 +192,20 @@ function storefront_zero_flight_init(): void {
 	exit;
 }
 add_action( 'template_redirect', 'storefront_zero_flight_init', 5 );
+
+/**
+ * Add type="module" to web component scripts.
+ *
+ * Web components use modern JavaScript features and should be loaded as modules.
+ *
+ * @param string $tag    The script tag.
+ * @param string $handle The script handle.
+ * @return string Modified script tag.
+ */
+function storefront_zero_script_module_tag( string $tag, string $handle ): string {
+	if ( strpos( $handle, 'sz-wc-' ) === 0 ) {
+		return str_replace( ' src=', ' type="module" src=', $tag );
+	}
+	return $tag;
+}
+add_filter( 'script_loader_tag', 'storefront_zero_script_module_tag', 10, 2 );

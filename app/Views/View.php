@@ -17,12 +17,19 @@ class View
      */
     public static function render( string $view, array $data = [] ): void
     {
+        $view = basename( $view );
         $path = __DIR__ . '/' . $view . '.php';
 
         if ( ! file_exists( $path ) ) {
-            throw new \RuntimeException(
-                sprintf( 'View "%s" not found at %s', $view, $path )
-            );
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                throw new \RuntimeException(
+                    sprintf( 'View "%s" not found at %s', $view, $path )
+                );
+            }
+
+            status_header( 500 );
+            echo '<!-- View not found: ' . esc_html( $view ) . ' -->';
+            return;
         }
 
         extract( $data, EXTR_SKIP );

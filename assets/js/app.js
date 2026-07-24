@@ -7,10 +7,12 @@ document.addEventListener('htmx:configRequest', function(evt) {
 });
 
 /**
- * Dispatch custom event after HTMX swap for downstream listeners.
+ * Post-swap handler: dispatches custom event, re-inits WooCommerce,
+ * toggles search results, and processes toast notifications.
  * Other scripts can listen: window.addEventListener('theme:dom-updated', handler)
  */
 document.addEventListener('htmx:afterSwap', function(evt) {
+    // Dispatch custom event for downstream listeners.
     window.dispatchEvent(new CustomEvent('theme:dom-updated', {
         detail: {
             target: evt.detail.target,
@@ -30,6 +32,22 @@ document.addEventListener('htmx:afterSwap', function(evt) {
     if (evt.detail.target.id === 'search-results') {
         var hasContent = evt.detail.target.innerHTML.trim() !== '';
         evt.detail.target.classList.toggle('hidden', !hasContent);
+    }
+
+    // Toast notification integration with HTMX responses.
+    var triggerHeader = evt.detail.xhr?.getResponseHeader('X-Trigger');
+    if (triggerHeader) {
+        try {
+            var triggers = JSON.parse(triggerHeader);
+            if (triggers.showToast) {
+                var toast = document.createElement('toast-notification');
+                toast.setAttribute('message', triggers.showToast.message || '');
+                toast.setAttribute('type', triggers.showToast.type || 'success');
+                document.body.appendChild(toast);
+            }
+        } catch (e) {
+            // Header is not JSON — ignore.
+        }
     }
 });
 
@@ -68,27 +86,6 @@ document.addEventListener('htmx:responseError', function(evt) {
         .catch(function(err) {
             console.error('[Storefront Zero] Nonce auto-retry failed:', err);
         });
-});
-
-/**
- * Toast notification integration with HTMX responses.
- * Parses HX-Trigger headers for showToast events and injects toast elements.
- */
-document.addEventListener('htmx:afterSwap', function(evt) {
-    var triggerHeader = evt.detail.xhr?.getResponseHeader('HX-Trigger');
-    if (!triggerHeader) return;
-
-    try {
-        var triggers = JSON.parse(triggerHeader);
-        if (triggers.showToast) {
-            var toast = document.createElement('toast-notification');
-            toast.setAttribute('message', triggers.showToast.message || '');
-            toast.setAttribute('type', triggers.showToast.type || 'success');
-            document.body.appendChild(toast);
-        }
-    } catch (e) {
-        // HX-Trigger header is not JSON — ignore.
-    }
 });
 
 /**

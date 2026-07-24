@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<a href="<?php echo esc_url( $link ); ?>"
+<button type="button"
    class="button wp-element-button <?php echo esc_attr( wc_wp_class_single( $link ) ); ?>"
    hx-post="<?php echo esc_url( home_url( '/htmx-api/cart/add' ) ); ?>"
    hx-vals='{"product_id": "<?php echo esc_attr( $product->get_id() ); ?>", "quantity": "1"}'
@@ -22,4 +22,4 @@ defined( 'ABSPATH' ) || exit;
    hx-indicator="#mini-cart"
    data-product-id="<?php echo esc_attr( $product->get_id() ); ?>">
     <?php echo esc_html( $product->add_to_cart_text() ); ?>
-</a>
+</button>

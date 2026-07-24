@@ -16,13 +16,13 @@ declare(strict_types=1);
 */
 
 it('declares strict types', function () {
-    $source = file_get_contents(__DIR__ . '/../../app/Views/View.php');
+    $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
     expect($source)->toContain('declare(strict_types=1)');
 });
 
 it('namespaces under ThemeApp', function () {
-    $source = file_get_contents(__DIR__ . '/../../app/Views/View.php');
+    $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
     expect($source)->toContain('namespace ThemeApp');
 });
@@ -34,19 +34,19 @@ it('namespaces under ThemeApp', function () {
 */
 
 it('sanitizes view name with basename', function () {
-    $source = file_get_contents(__DIR__ . '/../../app/Views/View.php');
+    $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
     expect($source)->toContain('$view = basename( $view )');
 });
 
 it('constructs path relative to Views directory', function () {
-    $source = file_get_contents(__DIR__ . '/../../app/Views/View.php');
+    $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
     expect($source)->toContain("__DIR__ . '/' . \$view . '.php'");
 });
 
 it('checks file existence before including', function () {
-    $source = file_get_contents(__DIR__ . '/../../app/Views/View.php');
+    $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
     expect($source)->toContain('file_exists( $path )');
 });
@@ -58,21 +58,21 @@ it('checks file existence before including', function () {
 */
 
 it('throws RuntimeException for missing view in debug mode', function () {
-    $source = file_get_contents(__DIR__ . '/../../app/Views/View.php');
+    $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
     expect($source)->toContain('throw new \\RuntimeException');
     expect($source)->toContain('View "%s" not found at %s');
 });
 
 it('outputs HTML comment for missing view in production', function () {
-    $source = file_get_contents(__DIR__ . '/../../app/Views/View.php');
+    $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
     expect($source)->toContain('<!-- View not found:');
     expect($source)->toContain('esc_html( $view )');
 });
 
 it('sets 500 status for missing view in production', function () {
-    $source = file_get_contents(__DIR__ . '/../../app/Views/View.php');
+    $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
     expect($source)->toContain('status_header( 500 )');
 });
@@ -84,7 +84,7 @@ it('sets 500 status for missing view in production', function () {
 */
 
 it('wraps template include in output buffering', function () {
-    $source = file_get_contents(__DIR__ . '/../../app/Views/View.php');
+    $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
     expect($source)->toContain('ob_start()');
     expect($source)->toContain('include $path');
@@ -92,14 +92,14 @@ it('wraps template include in output buffering', function () {
 });
 
 it('cleans output buffer on exception', function () {
-    $source = file_get_contents(__DIR__ . '/../../app/Views/View.php');
+    $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
     expect($source)->toContain('catch ( \\Throwable $e )');
     expect($source)->toContain('ob_end_clean()');
 });
 
 it('sets 500 status on rendering exception', function () {
-    $source = file_get_contents(__DIR__ . '/../../app/Views/View.php');
+    $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
     // After catching the exception, status_header(500) should be called.
     $lines = explode("\n", $source);
@@ -119,7 +119,7 @@ it('sets 500 status on rendering exception', function () {
 });
 
 it('outputs debug details for rendering exception when WP_DEBUG is true', function () {
-    $source = file_get_contents(__DIR__ . '/../../app/Views/View.php');
+    $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
     expect($source)->toContain('View rendering error:');
     expect($source)->toContain('$e->getMessage()');
@@ -127,7 +127,7 @@ it('outputs debug details for rendering exception when WP_DEBUG is true', functi
 });
 
 it('outputs generic error comment when WP_DEBUG is false', function () {
-    $source = file_get_contents(__DIR__ . '/../../app/Views/View.php');
+    $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
     expect($source)->toContain('<!-- View rendering error -->');
 });
@@ -139,7 +139,7 @@ it('outputs generic error comment when WP_DEBUG is false', function () {
 */
 
 it('extracts data array into template scope', function () {
-    $source = file_get_contents(__DIR__ . '/../../app/Views/View.php');
+    $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
     expect($source)->toContain('extract( $data, EXTR_SKIP )');
 });
@@ -149,14 +149,14 @@ it('extracts data array into template scope', function () {
 | render() — functional test with a real view
 |--------------------------------------------------------------------------
 |
-| View.php is at app/Views/View.php with `namespace ThemeApp;` but PSR-4
+| View.php is at app/View.php with `namespace ThemeApp;` but PSR-4
 | maps ThemeApp\\ to app/, so the autoloader expects app/View.php.
 | We require the file manually to test rendering.
 |
 */
 
 it('renders a valid view and captures output', function () {
-    require_once __DIR__ . '/../../app/Views/View.php';
+    require_once __DIR__ . '/../../app/View.php';
 
     ob_start();
     \ThemeApp\View::render('search-results', [
@@ -170,7 +170,7 @@ it('renders a valid view and captures output', function () {
 });
 
 it('handles empty data array gracefully', function () {
-    require_once __DIR__ . '/../../app/Views/View.php';
+    require_once __DIR__ . '/../../app/View.php';
 
     ob_start();
     \ThemeApp\View::render('mini-cart-fragment');
@@ -181,7 +181,7 @@ it('handles empty data array gracefully', function () {
 });
 
 it('throws RuntimeException for non-existent view when WP_DEBUG is true', function () {
-    require_once __DIR__ . '/../../app/Views/View.php';
+    require_once __DIR__ . '/../../app/View.php';
 
     if (!defined('WP_DEBUG')) {
         define('WP_DEBUG', true);

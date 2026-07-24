@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use ThemeApp\Controllers\CartController;
 
-// View lives at app/Views/View.php but PSR-4 maps ThemeApp\ to app/.
+// View lives at app/View.php — PSR-4 maps ThemeApp\ to app/.
 // The namespace-file mismatch means Composer can't autoload it — require manually.
-require_once __DIR__ . '/../../app/Views/View.php';
+require_once __DIR__ . '/../../app/View.php';
 
 use ThemeApp\View;
 

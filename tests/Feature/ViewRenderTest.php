@@ -22,7 +22,7 @@ use ThemeApp\View;
 
 // View.php has namespace ThemeApp but PSR-4 maps ThemeApp\ → app/.
 // Composer expects app/View.php which doesn't match — require manually.
-require_once __DIR__ . '/../../app/Views/View.php';
+require_once __DIR__ . '/../../app/View.php';
 
 /*
 |--------------------------------------------------------------------------

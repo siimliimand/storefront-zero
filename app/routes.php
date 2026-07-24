@@ -4,8 +4,8 @@ declare(strict_types=1);
 /**
  * Flight PHP Route Definitions
  *
- * Routes are relative to the base URL /htmx-api.
- * Includes nonce verification middleware for mutating requests.
+ * All routes include the /htmx-api prefix since Flight does not
+ * auto-strip the base_url from the request URI.
  *
  * @package Storefront_Zero
  */
@@ -38,35 +38,35 @@ Flight::before( 'start', function () {
 	}
 } );
 
-// GET /search — Live product search.
-Flight::route( 'GET /search', function () use ( $container ) {
+// GET /htmx-api/search — Live product search.
+Flight::route( 'GET /htmx-api/search', function () use ( $container ) {
 	$container->get( ProductController::class )->liveSearch();
 } );
 
-// POST /cart/add — Add product to cart.
-Flight::route( 'POST /cart/add', function () use ( $container ) {
+// POST /htmx-api/cart/add — Add product to cart.
+Flight::route( 'POST /htmx-api/cart/add', function () use ( $container ) {
 	$container->get( CartController::class )->addToCart();
 } );
 
-// GET /nonce — Fresh nonce for cache-safe requests.
-Flight::route( 'GET /nonce', function () {
+// GET /htmx-api/nonce — Fresh nonce for cache-safe requests.
+Flight::route( 'GET /htmx-api/nonce', function () {
 	header( 'Content-Type: application/json' );
 	echo wp_json_encode( [
 		'nonce' => wp_create_nonce( 'storefront_zero_htmx' ),
 	] );
 } );
 
-// GET /cart/mini — Mini-cart HTML fragment.
-Flight::route( 'GET /cart/mini', function () use ( $container ) {
+// GET /htmx-api/cart/mini — Mini-cart HTML fragment.
+Flight::route( 'GET /htmx-api/cart/mini', function () use ( $container ) {
 	$container->get( CartController::class )->renderMiniCart();
 } );
 
-// POST /cart/update-qty — Update cart item quantity.
-Flight::route( 'POST /cart/update-qty', function () use ( $container ) {
+// POST /htmx-api/cart/update-qty — Update cart item quantity.
+Flight::route( 'POST /htmx-api/cart/update-qty', function () use ( $container ) {
 	$container->get( CartController::class )->updateQuantity();
 } );
 
-// DELETE /cart/remove — Remove item from cart.
-Flight::route( 'DELETE /cart/remove', function () use ( $container ) {
+// DELETE /htmx-api/cart/remove — Remove item from cart.
+Flight::route( 'DELETE /htmx-api/cart/remove', function () use ( $container ) {
 	$container->get( CartController::class )->removeItem();
 } );

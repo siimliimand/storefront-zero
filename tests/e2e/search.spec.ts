@@ -3,13 +3,11 @@ import { test, expect } from '@playwright/test';
 /**
  * E2E tests for the HTMX live search interaction.
  *
- * Verifies: typing in search input → debounce delay → HTMX GET request →
- * results dropdown appears → Escape/Outside click closes dropdown.
+ * Verifies: typing in search input -> debounce delay -> HTMX GET request ->
+ * results dropdown appears -> Escape/Outside click closes dropdown.
  *
  * Prerequisites:
- * - WordPress + WooCommerce running at http://localhost:8080
- * - At least one published product in the store
- * - ddev start
+ * - WordPress + WooCommerce running (see playwright.config.ts for base URL)
  */
 
 test.describe('HTMX Live Search', () => {
@@ -25,7 +23,7 @@ test.describe('HTMX Live Search', () => {
       { timeout: 10000 },
     );
 
-    await searchInput.fill('shirt');
+    await searchInput.type('shirt', { delay: 30 });
 
     // HTMX fires after 300ms debounce. Wait for the response.
     const response = await searchResponsePromise;
@@ -47,7 +45,7 @@ test.describe('HTMX Live Search', () => {
       { timeout: 10000 },
     );
 
-    await searchInput.fill('shirt');
+    await searchInput.type('shirt', { delay: 30 });
     const response = await searchResponsePromise;
 
     // Allow HTMX to swap the fragment into the DOM.
@@ -74,7 +72,7 @@ test.describe('HTMX Live Search', () => {
       { timeout: 10000 },
     );
 
-    await searchInput.fill('shirt');
+    await searchInput.type('shirt', { delay: 30 });
     await searchResponsePromise;
     await page.waitForTimeout(500);
 
@@ -105,7 +103,7 @@ test.describe('HTMX Live Search', () => {
     );
 
     // Type a nonsense query unlikely to match any product.
-    await searchInput.fill('zzzzzzzzzzzzzzznothere');
+    await searchInput.type('zzzzzzzzzzzzzzznothere', { delay: 10 });
     const response = await searchResponsePromise;
     await page.waitForTimeout(500);
 
@@ -129,7 +127,7 @@ test.describe('HTMX Live Search', () => {
       { timeout: 10000 },
     );
 
-    await searchInput.fill('shirt');
+    await searchInput.type('shirt', { delay: 30 });
     await searchResponsePromise;
     await page.waitForTimeout(500);
 
@@ -151,7 +149,7 @@ test.describe('HTMX Live Search', () => {
       { timeout: 10000 },
     );
 
-    await searchInput.fill('shirt');
+    await searchInput.type('shirt', { delay: 30 });
     await searchResponsePromise;
     await page.waitForTimeout(500);
 
@@ -174,7 +172,7 @@ test.describe('HTMX Live Search', () => {
       await route.continue();
     });
 
-    await searchInput.fill('shirt');
+    await searchInput.type('shirt', { delay: 30 });
 
     // The spinner should become visible during the delayed request.
     await expect(spinner).toBeVisible({ timeout: 3000 });
@@ -191,7 +189,7 @@ test.describe('HTMX Live Search', () => {
       { timeout: 10000 },
     );
 
-    await searchInput.fill('cap');
+    await searchInput.type('cap', { delay: 30 });
     const response = await searchResponsePromise;
 
     const url = new URL(response.url());
@@ -211,13 +209,13 @@ test.describe('HTMX Live Search', () => {
       }
     });
 
-    await searchInput.fill('s');
+    await searchInput.type('s', { delay: 30 });
     await page.waitForTimeout(800);
 
-    await searchInput.fill('sh');
+    await searchInput.type('h', { delay: 30 });
     await page.waitForTimeout(800);
 
-    await searchInput.fill('shi');
+    await searchInput.type('i', { delay: 30 });
     await page.waitForTimeout(800);
 
     // At least one search request should have been made for each distinct query.

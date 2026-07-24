@@ -3,16 +3,12 @@ import { test, expect } from '@playwright/test';
 /**
  * E2E tests for the HTMX add-to-cart interaction.
  *
- * Verifies the full flow: product page → add-to-cart click → mini-cart
- * fragment swap via HX-Trigger → cart page persistence.
+ * Verifies the full flow: product page -> add-to-cart click -> mini-cart
+ * fragment swap via HX-Trigger -> cart page persistence.
  *
  * Prerequisites:
- * - WordPress + WooCommerce running at http://localhost:8080
- * - At least one published simple product in the store
- * - ddev start
+ * - WordPress + WooCommerce running (see playwright.config.ts for base URL)
  */
-
-const BASE_URL = 'http://localhost:8080';
 
 test.describe('HTMX Add to Cart', () => {
   test('navigates to a product page and shows add-to-cart button', async ({ page }) => {

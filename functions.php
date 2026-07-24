@@ -225,6 +225,31 @@ function storefront_zero_widgets_init(): void {
 add_action( 'widgets_init', 'storefront_zero_widgets_init' );
 
 /**
+ * Register rewrite rule for HTMX API endpoints.
+ *
+ * Without this, WordPress returns 404 before template_redirect fires.
+ *
+ * @return void
+ */
+function storefront_zero_htmx_rewrite_rules(): void {
+	add_rewrite_rule( 'htmx-api/(.+?)/?$', 'index.php?htmx-api=$matches[1]', 'top' );
+	add_rewrite_rule( 'htmx-api/?$', 'index.php?htmx-api=', 'top' );
+}
+add_action( 'init', 'storefront_zero_htmx_rewrite_rules' );
+
+/**
+ * Register the htmx-api query variable so WordPress recognizes it.
+ *
+ * @param array<string> $vars Existing public query vars.
+ * @return array<string>
+ */
+function storefront_zero_htmx_query_vars( array $vars ): array {
+	$vars[] = 'htmx-api';
+	return $vars;
+}
+add_filter( 'query_vars', 'storefront_zero_htmx_query_vars' );
+
+/**
  * Intercept HTMX API requests and hand them off to Flight PHP.
  *
  * Only handles requests under /htmx-api — all other URLs proceed through

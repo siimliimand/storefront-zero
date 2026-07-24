@@ -14,7 +14,7 @@ export default defineConfig({
   retries: 1,
 
   use: {
-    baseURL: 'http://localhost:8080',
+    baseURL: process.env.CI_BASE_URL || 'http://localhost:8080',
     headless: true,
     screenshot: 'only-on-failure',
   },

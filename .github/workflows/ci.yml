@@ -143,6 +143,7 @@ jobs:
           npm run test:e2e
         env:
           CI: true
+          CI_BASE_URL: "http://localhost:8080"
 
       - name: Upload Playwright report
         if: failure()

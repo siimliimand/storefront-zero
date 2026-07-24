@@ -46,6 +46,11 @@ THEME_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 rm -rf "$WP_DIR/wp-content/themes/storefront-zero"
 cp -r "$THEME_DIR" "$WP_DIR/wp-content/themes/storefront-zero"
 
+# Install theme Composer dependencies (vendor/ is gitignored)
+cd "$WP_DIR/wp-content/themes/storefront-zero"
+composer install --no-interaction --no-progress --prefer-dist 2>/dev/null || true
+cd - > /dev/null
+
 # Activate the theme
 wp theme activate storefront-zero --path="$WP_DIR" --allow-root 2>/dev/null || true
 

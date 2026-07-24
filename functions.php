@@ -32,6 +32,32 @@ function storefront_zero_filemtime( string $path ): string {
 }
 
 /**
+ * Resolve a JS file path, preferring the minified build output when available.
+ *
+ * Checks for a compiled version under assets/js/dist/ (output of
+ * `npm run build:js` via esbuild). Falls back to the source file so the
+ * theme works without a prior build step.
+ *
+ * @param string $source Relative path from theme root, e.g. 'assets/js/app.js'.
+ * @return array{0: string, 1: string} [absolute path, URI path].
+ */
+function storefront_zero_resolve_js( string $source ): array {
+	$dist = __DIR__ . '/assets/js/dist/' . basename( $source );
+
+	if ( file_exists( $dist ) ) {
+		return [
+			$dist,
+			get_template_directory_uri() . '/assets/js/dist/' . basename( $source ),
+		];
+	}
+
+	return [
+		__DIR__ . '/' . $source,
+		get_template_directory_uri() . '/' . $source,
+	];
+}
+
+/**
  * Enqueue theme assets: Tailwind CSS, HTMX, app JS, and Web Components.
  *
  * @return void
@@ -55,11 +81,13 @@ function storefront_zero_enqueue_assets(): void {
 	);
 
 	// Theme app JS — depends on HTMX, loaded in footer.
+	[ $app_path, $app_uri ] = storefront_zero_resolve_js( 'assets/js/app.js' );
+
 	wp_enqueue_script(
 		'storefront-zero-app',
-		get_template_directory_uri() . '/assets/js/app.js',
+		$app_uri,
 		[ 'htmx' ],
-		storefront_zero_filemtime( __DIR__ . '/assets/js/app.js' ),
+		storefront_zero_filemtime( $app_path ),
 		true
 	);
 
@@ -74,11 +102,13 @@ function storefront_zero_enqueue_assets(): void {
 	);
 
 	// Quantity stepper - +/- buttons for WooCommerce quantity inputs.
+	[ $qty_path, $qty_uri ] = storefront_zero_resolve_js( 'assets/js/qty-stepper.js' );
+
 	wp_enqueue_script(
 		'storefront-zero-qty-stepper',
-		get_template_directory_uri() . '/assets/js/qty-stepper.js',
+		$qty_uri,
 		[ 'htmx' ],
-		storefront_zero_filemtime( __DIR__ . '/assets/js/qty-stepper.js' ),
+		storefront_zero_filemtime( $qty_path ),
 		true
 	);
 
@@ -87,15 +117,16 @@ function storefront_zero_enqueue_assets(): void {
 		'mobile-drawer',
 		'toast-notification',
 		'dark-mode-toggle',
+		'product-variation-form',
 	];
 
 	foreach ( $web_components as $wc_name ) {
-		$wc_path     = __DIR__ . '/assets/js/web-components/' . $wc_name . '.js';
-		$wc_version  = storefront_zero_filemtime( $wc_path );
+		[ $wc_path, $wc_uri ] = storefront_zero_resolve_js( 'assets/js/web-components/' . $wc_name . '.js' );
+		$wc_version            = storefront_zero_filemtime( $wc_path );
 
 		wp_enqueue_script(
 			'sz-wc-' . $wc_name,
-			get_template_directory_uri() . '/assets/js/web-components/' . $wc_name . '.js',
+			$wc_uri,
 			[ 'htmx' ],
 			$wc_version,
 			true

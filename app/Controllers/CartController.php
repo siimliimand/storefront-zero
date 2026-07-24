@@ -50,8 +50,11 @@ class CartController
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
-		$product_id = isset( Flight::request()->data['product_id'] ) ? absint( Flight::request()->data['product_id'] ) : 0;
-		$quantity   = isset( Flight::request()->data['quantity'] ) ? absint( Flight::request()->data['quantity'] ) : 1;
+		$data = Flight::request()->data ?: [];
+
+		$product_id  = isset( $data['product_id'] ) ? absint( $data['product_id'] ) : 0;
+		$quantity    = isset( $data['quantity'] ) ? absint( $data['quantity'] ) : 1;
+		$variation_id = isset( $data['variation_id'] ) ? absint( $data['variation_id'] ) : 0;
 
 		if ( empty( $product_id ) || ! wc_get_product( $product_id ) ) {
 			status_header( 400 );
@@ -59,7 +62,17 @@ class CartController
 			return;
 		}
 
-		$added = $this->cart->add_to_cart( $product_id, $quantity );
+		// Collect attribute data for variable products.
+		$variation = [];
+		if ( $variation_id > 0 ) {
+			foreach ( $data as $key => $value ) {
+				if ( 0 === strpos( $key, 'attribute_' ) ) {
+					$variation[ $key ] = sanitize_text_field( wp_unslash( $value ) );
+				}
+			}
+		}
+
+		$added = $this->cart->add_to_cart( $product_id, $quantity, $variation_id, $variation );
 
 		if ( $added ) {
 			header( 'HX-Trigger: cartUpdated' );

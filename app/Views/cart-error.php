@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * View template for cart error messages.
  *

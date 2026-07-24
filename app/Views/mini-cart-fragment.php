@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Mini-cart HTML fragment for HTMX swap.
  *

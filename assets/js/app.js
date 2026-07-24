@@ -39,7 +39,7 @@ document.addEventListener('htmx:afterSwap', function(evt) {
  * Components self-register via customElements.define() in their own files.
  */
 document.addEventListener('DOMContentLoaded', function() {
-    const components = document.querySelectorAll('mobile-drawer, cart-drawer, search-overlay');
+    const components = document.querySelectorAll('mobile-drawer');
     if (components.length > 0) {
         console.log('[Storefront Zero] Web components initialized:',
             Array.from(components).map(el => el.tagName.toLowerCase()).join(', '));

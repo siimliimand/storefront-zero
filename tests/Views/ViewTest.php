@@ -42,7 +42,7 @@ it('sanitizes view name with basename', function () {
 it('constructs path relative to Views directory', function () {
     $source = file_get_contents(__DIR__ . '/../../app/View.php');
 
-    expect($source)->toContain("__DIR__ . '/' . \$view . '.php'");
+    expect($source)->toContain("__DIR__ . '/Views/' . \$view . '.php'");
 });
 
 it('checks file existence before including', function () {

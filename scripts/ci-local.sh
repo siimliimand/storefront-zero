@@ -70,7 +70,7 @@ docker compose exec -T wp bash -c '
   wp core install --url=http://localhost:8080 --title="Storefront Zero CI" \
     --admin_user=admin --admin_password=admin --admin_email=admin@example.com --allow-root &&
 
-  wp plugin install woocommerce --activate --allow-root &&
+  wp plugin install woocommerce --version=9.6.0 --activate --allow-root &&
 
   wp theme activate storefront-zero --allow-root &&
 
@@ -79,7 +79,7 @@ docker compose exec -T wp bash -c '
 
   wp wc product create --user=admin --name="Test Product" --regular_price="29.99" \
     --status=publish --type=simple --allow-root 2>/dev/null || \
-  wp post_create --post_type=product --post_title="Test Product" --post_status=publish --porcelain --allow-root
+  wp post create --post_type=product --post_title="Test Product" --post_status=publish --porcelain --allow-root
 '
 
 if curl -sf http://localhost:8080/ > /dev/null 2>&1; then

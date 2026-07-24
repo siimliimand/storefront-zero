@@ -22,17 +22,17 @@ use function Tests\load_route_definitions;
 it('defines all expected GET routes', function () {
     $source = load_route_definitions();
 
-    expect($source)->toContain('GET /search');
-    expect($source)->toContain('GET /nonce');
-    expect($source)->toContain('GET /cart/mini');
+    expect($source)->toContain('GET /htmx-api/search');
+    expect($source)->toContain('GET /htmx-api/nonce');
+    expect($source)->toContain('GET /htmx-api/cart/mini');
 });
 
 it('defines all expected mutating routes', function () {
     $source = load_route_definitions();
 
-    expect($source)->toContain('POST /cart/add');
-    expect($source)->toContain('POST /cart/update-qty');
-    expect($source)->toContain('DELETE /cart/remove');
+    expect($source)->toContain('POST /htmx-api/cart/add');
+    expect($source)->toContain('POST /htmx-api/cart/update-qty');
+    expect($source)->toContain('DELETE /htmx-api/cart/remove');
 });
 
 it('includes nonce verification middleware via Flight::before', function () {

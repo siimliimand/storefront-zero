@@ -35,7 +35,14 @@ class View
         extract( $data, EXTR_SKIP );
 
         ob_start();
-        include $path;
-        echo ob_get_clean();
+        try {
+            include $path;
+            echo ob_get_clean();
+        } catch ( \Throwable $e ) {
+            while ( ob_get_level() ) {
+                ob_end_clean();
+            }
+            throw $e;
+        }
     }
 }

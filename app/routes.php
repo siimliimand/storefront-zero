@@ -42,3 +42,21 @@ Flight::route( 'GET /search', function () {
 Flight::route( 'POST /cart/add', function () {
 	CartController::addToCart();
 } );
+
+// GET /nonce — Fresh nonce for cache-safe requests.
+Flight::route( 'GET /nonce', function () {
+	header( 'Content-Type: application/json' );
+	echo wp_json_encode( [
+		'nonce' => wp_create_nonce( 'storefront_zero_htmx' ),
+	] );
+} );
+
+// GET /cart/mini — Mini-cart HTML fragment.
+Flight::route( 'GET /cart/mini', function () {
+	CartController::renderMiniCart();
+} );
+
+// POST /cart/update-qty — Update cart item quantity.
+Flight::route( 'POST /cart/update-qty', function () {
+	CartController::updateQuantity();
+} );

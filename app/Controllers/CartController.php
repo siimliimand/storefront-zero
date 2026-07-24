@@ -24,7 +24,7 @@ class CartController
 
 		if ( empty( $product_id ) || ! wc_get_product( $product_id ) ) {
 			status_header( 400 );
-			echo '<div class="cart-error"><p>Invalid product. Please try again.</p></div>';
+			View::render( 'cart-error', [ 'message' => __( 'Invalid product. Please try again.', 'storefront-zero' ) ] );
 			return;
 		}
 
@@ -35,7 +35,7 @@ class CartController
 			self::renderMiniCart();
 		} else {
 			status_header( 400 );
-			echo '<div class="cart-error"><p>Could not add product to cart. Please try again.</p></div>';
+			View::render( 'cart-error', [ 'message' => __( 'Could not add product to cart. Please try again.', 'storefront-zero' ) ] );
 		}
 	}
 

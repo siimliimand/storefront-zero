@@ -43,7 +43,7 @@ document.addEventListener('htmx:responseError', function(evt) {
     // Prevent infinite retry loops — only retry once per request.
     if (evt.detail.requestConfig?.szRetrying) return;
 
-    var path = '/htmx-api/nonce?_t=' + Date.now();
+    var path = (window.ThemeSettings?.endpoint || '/htmx-api') + '/nonce?_t=' + Date.now();
 
     fetch(path)
         .then(function(response) {

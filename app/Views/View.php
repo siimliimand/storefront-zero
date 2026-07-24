@@ -34,12 +34,13 @@ class View
 
         extract( $data, EXTR_SKIP );
 
+        $level = ob_get_level();
         ob_start();
         try {
             include $path;
             echo ob_get_clean();
         } catch ( \Throwable $e ) {
-            while ( ob_get_level() ) {
+            while ( ob_get_level() > $level ) {
                 ob_end_clean();
             }
 

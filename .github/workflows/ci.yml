@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  php-tests:
+    name: PHP Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --no-progress --error-format=github
+
+      - name: Run Pest
+        run: vendor/bin/pest
+
+  js-build:
+    name: JS Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: js-build
+
+    # E2E tests require a running WordPress instance.
+    # In local dev, use DDEV: `ddev start` (WordPress on port 8080).
+    # In CI, options include:
+    #   - wp-env via @wordpress/env (GitHub Actions service container)
+    #   - DDEV in CI (requires Docker-in-Docker setup)
+    #   - Spin up WordPress with MySQL in a service container
+    # Adjust the steps below once CI WordPress provisioning is finalized.
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      # TODO: Provision a WordPress instance before running E2E tests.
+      # Example using wp-env:
+      #   - name: Install wp-env
+      #     run: npm install -g @wordpress/env
+      #   - name: Start wp-env
+      #     run: wp-env start
+      #     env:
+      #       WP_ENV_PORT: 8080
+
+      - name: Run Playwright tests
+        run: npm run test:e2e
+        env:
+          CI: true

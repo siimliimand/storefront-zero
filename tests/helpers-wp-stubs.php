@@ -188,6 +188,137 @@ if (!class_exists('WC_Cart')) {
     }
 }
 
+/*
+|--------------------------------------------------------------------------
+| Transient stubs (controllable per-test via static storage)
+|--------------------------------------------------------------------------
+*/
+
+if (!class_exists('WpTransientStore')) {
+    class WpTransientStore
+    {
+        /** @var array<string, mixed> */
+        private static array $store = [];
+
+        /** @var array<string, int> Expiration timestamps keyed by transient key. */
+        private static array $expiries = [];
+
+        public static function get(string $key): mixed
+        {
+            if (!isset(self::$store[$key])) {
+                return false;
+            }
+
+            if (isset(self::$expiries[$key]) && time() > self::$expiries[$key]) {
+                unset(self::$store[$key], self::$expiries[$key]);
+                return false;
+            }
+
+            return self::$store[$key];
+        }
+
+        public static function set(string $key, mixed $value, int $expiration = 0): void
+        {
+            self::$store[$key] = $value;
+
+            if ($expiration > 0) {
+                self::$expiries[$key] = time() + $expiration;
+            }
+        }
+
+        public static function reset(): void
+        {
+            self::$store  = [];
+            self::$expiries = [];
+        }
+    }
+}
+
+if (!function_exists('get_transient')) {
+    function get_transient(string $key): mixed {
+        return \WpTransientStore::get($key);
+    }
+}
+
+if (!function_exists('set_transient')) {
+    function set_transient(string $key, mixed $value, int $expiration = 0): bool {
+        \WpTransientStore::set($key, $value, $expiration);
+        return true;
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| wc_get_products stub (controllable per-test)
+|--------------------------------------------------------------------------
+*/
+
+if (!class_exists('WcProductsStub')) {
+    class WcProductsStub
+    {
+        /** @var \Closure|null */
+        private static ?\Closure $callback = null;
+
+        /** @var array<int, object> Mock product objects keyed by ID. */
+        private static array $products = [];
+
+        /**
+         * Set a callback that replaces the default wc_get_products behaviour.
+         *
+         * @param callable(array): array<mixed> $cb
+         */
+        public static function setCallback(callable $cb): void
+        {
+            self::$callback = \Closure::fromCallable($cb);
+        }
+
+        /**
+         * Register mock WC_Product objects by ID.
+         *
+         * @param array<int, object> $products
+         */
+        public static function setProducts(array $products): void
+        {
+            self::$products = $products;
+        }
+
+        public static function get(array $args = []): array
+        {
+            if (self::$callback !== null) {
+                return (self::$callback)($args);
+            }
+
+            // Default: return registered mock product objects when 'return' => 'objects',
+            // otherwise return their IDs.
+            $return = $args['return'] ?? 'ids';
+
+            if ($return === 'objects') {
+                $include = $args['include'] ?? [];
+                return array_filter(
+                    array_map(
+                        fn(int $id) => self::$products[$id] ?? null,
+                        $include
+                    )
+                );
+            }
+
+            return array_keys(self::$products);
+        }
+
+        public static function reset(): void
+        {
+            self::$callback = null;
+            self::$products = [];
+        }
+    }
+}
+
+if (!function_exists('wc_get_products')) {
+    function wc_get_products(array $args = []): array {
+        return \WcProductsStub::get($args);
+    }
+}
+
 if (!function_exists('WC')) {
     function WC(): object {
         static $wc = null;

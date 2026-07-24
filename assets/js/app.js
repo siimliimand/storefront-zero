@@ -39,3 +39,28 @@ document.addEventListener('DOMContentLoaded', function() {
             Array.from(components).map(el => el.tagName.toLowerCase()).join(', '));
     }
 });
+
+/**
+ * Search dropdown accessibility.
+ * - Escape key closes the dropdown and returns focus to the search input.
+ * - Clicking outside the search area dismisses the dropdown.
+ */
+(function () {
+    var searchInput = document.querySelector('input[name="s"]');
+    var searchResults = document.getElementById('search-results');
+
+    if (!searchInput || !searchResults) return;
+
+    document.addEventListener('keydown', function (evt) {
+        if (evt.key === 'Escape' && searchResults.innerHTML.trim() !== '') {
+            searchResults.classList.add('hidden');
+            searchInput.focus();
+        }
+    });
+
+    document.addEventListener('click', function (evt) {
+        if (!searchInput.contains(evt.target) && !searchResults.contains(evt.target)) {
+            searchResults.classList.add('hidden');
+        }
+    });
+})();

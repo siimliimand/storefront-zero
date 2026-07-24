@@ -301,10 +301,10 @@ add_filter( 'script_loader_tag', 'storefront_zero_defer_htmx', 20, 2 );
  * Filters wp_get_attachment_image_attributes only on WooCommerce product pages
  * to avoid affecting above-the-fold images site-wide.
  *
- * @param array        $attr       Image attributes.
- * @param \WP_Post     $attachment Attachment post object.
- * @param string|int[] $size       Requested image size.
- * @return array Modified attributes.
+ * @param array<string, string> $attr       Image attributes.
+ * @param \WP_Post              $attachment Attachment post object.
+ * @param string|int[]          $size       Requested image size.
+ * @return array<string, string> Modified attributes.
  */
 function storefront_zero_lazy_product_images( array $attr, \WP_Post $attachment, $size ): array {
 	if ( is_woocommerce() ) {

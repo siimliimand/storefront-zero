@@ -55,13 +55,13 @@ it('assigns cart and view to private properties', function () {
 it('sanitizes product_id with absint', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/CartController.php');
 
-    expect($source)->toContain('absint( $_POST[\'product_id\'] )');
+    expect($source)->toContain('absint( $data[\'product_id\'] )');
 });
 
 it('sanitizes quantity with absint', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/CartController.php');
 
-    expect($source)->toContain('absint( $_POST[\'quantity\'] )');
+    expect($source)->toContain('absint( $data[\'quantity\'] )');
 });
 
 it('validates product_id and product existence before adding', function () {
@@ -109,7 +109,7 @@ it('renders mini-cart-fragment view', function () {
 it('sanitizes cart_item_key with sanitize_text_field', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/CartController.php');
 
-    expect($source)->toContain('sanitize_text_field( wp_unslash( $_POST[\'cart_item_key\'] ) )');
+    expect($source)->toContain('sanitize_text_field( wp_unslash( Flight::request()->data[\'cart_item_key\'] ) )');
 });
 
 it('returns error comment for empty cart_item_key', function () {
@@ -136,11 +136,11 @@ it('sets quantity via WC cart when quantity is non-zero', function () {
 |--------------------------------------------------------------------------
 */
 
-it('uses POST cart_item_key for remove operation', function () {
+it('uses Flight request data for remove operation', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/CartController.php');
 
-    // removeItem reads from $_POST, not $_DELETE — HTMX sends body with DELETE.
-    expect($source)->toContain('sanitize_text_field( wp_unslash( $_POST[\'cart_item_key\'] ) )');
+    // removeItem reads from Flight::request()->data, not $_POST.
+    expect($source)->toContain('sanitize_text_field( wp_unslash( Flight::request()->data[\'cart_item_key\'] ) )');
 });
 
 it('returns error comment for empty key on remove', function () {

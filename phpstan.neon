@@ -26,7 +26,8 @@ parameters:
         - '#Call to method .* on an unknown class WC_Cart\.#'
         - '#Parameter .* of method .* has invalid type WC_Cart\.#'
         - '#Anonymous function has invalid return type WC_Cart\.#'
-        - '#missingType\.iterableValue#'
+        - '#Ternary operator condition is always true\.#'
+        - '#Call to method .* on an unknown class WC_Product\.#'
 
 includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon

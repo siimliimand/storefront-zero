@@ -14,12 +14,13 @@
 defined( 'ABSPATH' ) || exit;
 ?>
 <button type="button"
-   class="button wp-element-button <?php echo esc_attr( wc_wp_class_single( $link ) ); ?>"
+   class="button wp-element-button"
    hx-post="<?php echo esc_url( home_url( '/htmx-api/cart/add' ) ); ?>"
    hx-vals='{"product_id": "<?php echo esc_attr( $product->get_id() ); ?>", "quantity": "1"}'
-   hx-target="#mini-cart"
-   hx-swap="innerHTML"
-   hx-indicator="#mini-cart"
+   hx-target="#mini-cart-container"
+   hx-swap="outerHTML"
+   hx-indicator=".htmx-indicator"
+   aria-label="<?php echo esc_attr( sprintf( __( 'Add "%s" to cart', 'storefront-zero' ), $product->get_name() ) ); ?>"
    data-product-id="<?php echo esc_attr( $product->get_id() ); ?>">
     <?php echo esc_html( $product->add_to_cart_text() ); ?>
 </button>

@@ -12,6 +12,8 @@
  */
 
 defined( 'ABSPATH' ) || exit;
+
+global $product;
 ?>
 <button type="button"
    class="button wp-element-button"

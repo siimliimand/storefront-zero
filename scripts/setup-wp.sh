@@ -81,8 +81,9 @@ wp option get woocommerce_shop_page_id --path="$WP_DIR" --allow-root 2>/dev/null
 wp rewrite structure '/%postname%/' --path="$WP_DIR" --allow-root 2>/dev/null || true
 
 echo "==> Starting PHP built-in server on port ${WP_PORT}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$WP_DIR"
-php -S "0.0.0.0:${WP_PORT}" -t . > /tmp/wp-server.log 2>&1 &
+php -S "0.0.0.0:${WP_PORT}" "$SCRIPT_DIR/router.php" > /tmp/wp-server.log 2>&1 &
 WP_PID=$!
 echo "WordPress PID: ${WP_PID}"
 

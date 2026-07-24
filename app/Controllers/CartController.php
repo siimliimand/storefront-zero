@@ -16,10 +16,36 @@ use ThemeApp\View;
 class CartController
 {
 	/**
+	 * View instance for rendering templates.
+	 *
+	 * @var \ThemeApp\View
+	 */
+	private View $view;
+
+	/**
+	 * WooCommerce cart instance.
+	 *
+	 * @var \WC_Cart
+	 */
+	private \WC_Cart $cart;
+
+	/**
+	 * Constructor. Injected by the DI container.
+	 *
+	 * @param \WC_Cart     $cart WooCommerce cart instance.
+	 * @param \ThemeApp\View $view View renderer.
+	 */
+	public function __construct( \WC_Cart $cart, View $view )
+	{
+		$this->cart = $cart;
+		$this->view = $view;
+	}
+
+	/**
 	 * Add product to cart via HTMX POST.
 	 * Returns updated mini-cart fragment with HX-Trigger header.
 	 */
-	public static function addToCart(): void
+	public function addToCart(): void
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
@@ -28,18 +54,18 @@ class CartController
 
 		if ( empty( $product_id ) || ! wc_get_product( $product_id ) ) {
 			status_header( 400 );
-			View::render( 'cart-error', [ 'message' => __( 'Invalid product. Please try again.', 'storefront-zero' ) ] );
+			$this->view->render( 'cart-error', [ 'message' => __( 'Invalid product. Please try again.', 'storefront-zero' ) ] );
 			return;
 		}
 
-		$added = WC()->cart->add_to_cart( $product_id, $quantity );
+		$added = $this->cart->add_to_cart( $product_id, $quantity );
 
 		if ( $added ) {
 			header( 'HX-Trigger: cartUpdated' );
-			self::renderMiniCart();
+			$this->renderMiniCart();
 		} else {
 			status_header( 400 );
-			View::render( 'cart-error', [ 'message' => __( 'Could not add product to cart. Please try again.', 'storefront-zero' ) ] );
+			$this->view->render( 'cart-error', [ 'message' => __( 'Could not add product to cart. Please try again.', 'storefront-zero' ) ] );
 		}
 	}
 
@@ -47,18 +73,18 @@ class CartController
 	 * Render mini-cart HTML fragment.
 	 * Shows cart icon with item count badge; used by GET /htmx-api/cart/mini.
 	 */
-	public static function renderMiniCart(): void
+	public function renderMiniCart(): void
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
-		View::render( 'mini-cart-fragment' );
+		$this->view->render( 'mini-cart-fragment' );
 	}
 
 	/**
 	 * Update cart item quantity via HTMX POST.
 	 * Returns updated mini-cart fragment with HX-Trigger header.
 	 */
-	public static function updateQuantity(): void
+	public function updateQuantity(): void
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
@@ -74,14 +100,14 @@ class CartController
 		$success = false;
 
 		if ( 0 === $quantity ) {
-			$success = WC()->cart->remove_cart_item( $cart_item_key );
+			$success = $this->cart->remove_cart_item( $cart_item_key );
 		} else {
-			$success = WC()->cart->set_quantity( $cart_item_key, $quantity );
+			$success = $this->cart->set_quantity( $cart_item_key, $quantity );
 		}
 
 		if ( $success ) {
 			header( 'HX-Trigger: cartUpdated' );
-			self::renderMiniCart();
+			$this->renderMiniCart();
 		} else {
 			status_header( 400 );
 			echo '<!-- Could not update cart -->';
@@ -92,7 +118,7 @@ class CartController
 	 * Remove cart item via HTMX DELETE.
 	 * Returns updated mini-cart fragment with HX-Trigger header.
 	 */
-	public static function removeItem(): void
+	public function removeItem(): void
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
@@ -104,11 +130,11 @@ class CartController
 			return;
 		}
 
-		$removed = WC()->cart->remove_cart_item( $cart_item_key );
+		$removed = $this->cart->remove_cart_item( $cart_item_key );
 
 		if ( $removed ) {
 			header( 'HX-Trigger: cartUpdated' );
-			self::renderMiniCart();
+			$this->renderMiniCart();
 		} else {
 			status_header( 400 );
 			echo '<!-- Could not remove cart item -->';

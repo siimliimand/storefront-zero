@@ -10,8 +10,12 @@ declare(strict_types=1);
  * @package Storefront_Zero
  */
 
+use ThemeApp\Container;
 use ThemeApp\Controllers\ProductController;
 use ThemeApp\Controllers\CartController;
+
+// Build the DI container once per request.
+$container = Container::create();
 
 /**
  * Nonce verification middleware.
@@ -35,13 +39,13 @@ Flight::before( 'start', function () {
 } );
 
 // GET /search — Live product search.
-Flight::route( 'GET /search', function () {
-	ProductController::liveSearch();
+Flight::route( 'GET /search', function () use ( $container ) {
+	$container->get( ProductController::class )->liveSearch();
 } );
 
 // POST /cart/add — Add product to cart.
-Flight::route( 'POST /cart/add', function () {
-	CartController::addToCart();
+Flight::route( 'POST /cart/add', function () use ( $container ) {
+	$container->get( CartController::class )->addToCart();
 } );
 
 // GET /nonce — Fresh nonce for cache-safe requests.
@@ -53,16 +57,16 @@ Flight::route( 'GET /nonce', function () {
 } );
 
 // GET /cart/mini — Mini-cart HTML fragment.
-Flight::route( 'GET /cart/mini', function () {
-	CartController::renderMiniCart();
+Flight::route( 'GET /cart/mini', function () use ( $container ) {
+	$container->get( CartController::class )->renderMiniCart();
 } );
 
 // POST /cart/update-qty — Update cart item quantity.
-Flight::route( 'POST /cart/update-qty', function () {
-	CartController::updateQuantity();
+Flight::route( 'POST /cart/update-qty', function () use ( $container ) {
+	$container->get( CartController::class )->updateQuantity();
 } );
 
 // DELETE /cart/remove — Remove item from cart.
-Flight::route( 'DELETE /cart/remove', function () {
-	CartController::removeItem();
+Flight::route( 'DELETE /cart/remove', function () use ( $container ) {
+	$container->get( CartController::class )->removeItem();
 } );

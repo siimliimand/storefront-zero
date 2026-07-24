@@ -92,19 +92,6 @@ document.addEventListener('htmx:afterSwap', function(evt) {
 });
 
 /**
- * Web Component registration confirmation
- * Logs registered components on load for debugging.
- * Components self-register via customElements.define() in their own files.
- */
-document.addEventListener('DOMContentLoaded', function() {
-    const components = document.querySelectorAll('mobile-drawer');
-    if (components.length > 0) {
-        console.log('[Storefront Zero] Web components initialized:',
-            Array.from(components).map(el => el.tagName.toLowerCase()).join(', '));
-    }
-});
-
-/**
  * Search dropdown accessibility.
  * - Escape key closes the dropdown and returns focus to the search input.
  * - Clicking outside the search area dismisses the dropdown.

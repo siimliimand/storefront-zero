@@ -29,6 +29,25 @@ it('namespaces under ThemeApp\\Controllers', function () {
 
 /*
 |--------------------------------------------------------------------------
+| Constructor injection
+|--------------------------------------------------------------------------
+*/
+
+it('has constructor with WC_Cart and View parameters', function () {
+    $source = file_get_contents(__DIR__ . '/../../app/Controllers/CartController.php');
+
+    expect($source)->toContain('public function __construct( \\WC_Cart $cart, View $view )');
+});
+
+it('assigns cart and view to private properties', function () {
+    $source = file_get_contents(__DIR__ . '/../../app/Controllers/CartController.php');
+
+    expect($source)->toContain('$this->cart = $cart');
+    expect($source)->toContain('$this->view = $view');
+});
+
+/*
+|--------------------------------------------------------------------------
 | addToCart method
 |--------------------------------------------------------------------------
 */
@@ -54,7 +73,7 @@ it('validates product_id and product existence before adding', function () {
 it('returns cart-error view on invalid product', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/CartController.php');
 
-    expect($source)->toContain("View::render( 'cart-error'");
+    expect($source)->toContain('$this->view->render( \'cart-error\'');
 });
 
 it('sets HX-Trigger header on successful add', function () {
@@ -78,7 +97,7 @@ it('returns 400 status on failed add-to-cart', function () {
 it('renders mini-cart-fragment view', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/CartController.php');
 
-    expect($source)->toContain("View::render( 'mini-cart-fragment' )");
+    expect($source)->toContain('$this->view->render( \'mini-cart-fragment\' )');
 });
 
 /*
@@ -102,13 +121,13 @@ it('returns error comment for empty cart_item_key', function () {
 it('removes item when quantity is zero', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/CartController.php');
 
-    expect($source)->toContain('WC()->cart->remove_cart_item( $cart_item_key )');
+    expect($source)->toContain('$this->cart->remove_cart_item( $cart_item_key )');
 });
 
 it('sets quantity via WC cart when quantity is non-zero', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/CartController.php');
 
-    expect($source)->toContain('WC()->cart->set_quantity( $cart_item_key, $quantity )');
+    expect($source)->toContain('$this->cart->set_quantity( $cart_item_key, $quantity )');
 });
 
 /*
@@ -133,17 +152,29 @@ it('returns error comment for empty key on remove', function () {
     $found = false;
 
     foreach ($lines as $line) {
-        if (str_contains($line, 'public static function removeItem()')) {
+        if (str_contains($line, 'public function removeItem()')) {
             $inRemoveItem = true;
         }
         if ($inRemoveItem && str_contains($line, '<!-- Invalid cart item key -->')) {
             $found = true;
             break;
         }
-        if ($inRemoveItem && str_contains($line, 'public static function') && !str_contains($line, 'removeItem')) {
+        if ($inRemoveItem && str_contains($line, 'public function') && !str_contains($line, 'removeItem')) {
             break;
         }
     }
 
     expect($found)->toBeTrue();
+});
+
+/*
+|--------------------------------------------------------------------------
+| Instance methods (no static)
+|--------------------------------------------------------------------------
+*/
+
+it('has no static methods', function () {
+    $source = file_get_contents(__DIR__ . '/../../app/Controllers/CartController.php');
+
+    expect($source)->not->toContain('public static function');
 });

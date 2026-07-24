@@ -11,14 +11,20 @@ declare(strict_types=1);
 
 namespace ThemeApp\Controllers;
 
+use ThemeApp\View;
+
 class NonceController
 {
+	public function __construct(private View $view)
+	{
+	}
+
 	/**
 	 * Return a fresh nonce for cache-safe HTMX requests.
 	 *
 	 * @return void
 	 */
-	public static function refresh(): void
+	public function refresh(): void
 	{
 		header( 'Content-Type: application/json' );
 		echo wp_json_encode( [

@@ -19,6 +19,10 @@
 
 defined( 'ABSPATH' ) || exit;
 
+if ( ! isset( $input_only ) ) {
+    $input_only = false;
+}
+
 if ( $input_only ) {
     echo '<input type="number" class="form-input w-16 text-center border rounded px-2 py-1 ' . esc_attr( $input_class ) . '" step="' . esc_attr( $step ) . '" min="' . esc_attr( $min ) . '" max="' . esc_attr( $max > 0 ? $max : '' ) . '" name="' . esc_attr( $input_name ) . '" value="' . esc_attr( $input_value ) . '" id="' . esc_attr( $input_id ) . '" inputmode="numeric" autocomplete="off" />';
     return;

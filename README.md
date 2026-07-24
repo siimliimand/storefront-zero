@@ -71,6 +71,62 @@ To ensure HTMX functionality works correctly with WP Rocket caching:
    - Cache static fragments (search results, page content)
    - Bypass cache for cart/checkout responses (they set `Set-Cookie` headers)
 
+### Fragment Caching
+
+Flight PHP serves HTML fragments for HTMX requests. Configure your server cache to differentiate between static fragments (search results, page content) and dynamic cart responses.
+
+#### Nginx
+
+```nginx
+# Cache HTMX fragment responses
+location /htmx-api/ {
+    # Don't cache cart/checkout responses (they set cookies)
+    set $skip_cache 0;
+    if ($request_uri ~* "/cart/") {
+        set $skip_cache 1;
+    }
+
+    # Cache static fragments for 5 minutes
+    proxy_cache_valid 200 5m;
+    proxy_cache_bypass $skip_cache;
+    proxy_no_cache $skip_cache;
+
+    # Pass Set-Cookie headers for cart responses
+    proxy_hide_header Set-Cookie;
+    proxy_ignore_headers Set-Cookie;
+}
+```
+
+#### Varnish
+
+```vcl
+sub vcl_backend_response {
+    # Don't cache cart responses
+    if (bereq.url ~ "/cart/") {
+        set beresp.uncacheable = true;
+        set beresp.ttl = 0s;
+        return (deliver);
+    }
+
+    # Cache other HTMX fragments for 5 minutes
+    if (bereq.url ~ "/htmx-api/") {
+        set beresp.ttl = 5m;
+    }
+}
+```
+
+#### Redis (Object Cache)
+
+```php
+// In wp-config.php or a custom plugin
+if (defined('WP_CACHE') && WP_CACHE) {
+    // Skip cache for cart/checkout requests
+    if (preg_match('#/cart/#', $_SERVER['REQUEST_URI'])) {
+        define('WP_CACHE', false);
+    }
+}
+```
+
 ## Contributing
 
 1. Fork the repository.

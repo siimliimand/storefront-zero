@@ -17,6 +17,14 @@ document.addEventListener('htmx:afterSwap', function(evt) {
             source: evt.detail.requestConfig?.path || ''
         }
     }));
+
+    // Re-initialize WooCommerce scripts on swapped content
+    if (window.jQuery) {
+        var $ = window.jQuery;
+        // Re-init variation forms
+        $(evt.detail.target).find('.variations_form').wc_variation_form();
+        $(evt.detail.target).filter('.variations_form').wc_variation_form();
+    }
 });
 
 /**

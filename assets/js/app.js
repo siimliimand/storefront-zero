@@ -34,6 +34,64 @@ document.addEventListener('htmx:afterSwap', function(evt) {
 });
 
 /**
+ * Nonce auto-retry on 403 responses.
+ * When a full-page cache serves a stale nonce, fetch a fresh one and retry.
+ */
+document.addEventListener('htmx:responseError', function(evt) {
+    if (evt.detail.xhr.status !== 403) return;
+
+    // Prevent infinite retry loops — only retry once per request.
+    if (evt.detail.requestConfig?.szRetrying) return;
+
+    var path = '/htmx-api/nonce?_t=' + Date.now();
+
+    fetch(path)
+        .then(function(response) {
+            if (!response.ok) throw new Error('Nonce refresh failed');
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.nonce) {
+                window.ThemeSettings.nonce = data.nonce;
+
+                // Mark this request as already retried, then re-issue it.
+                evt.detail.requestConfig.szRetrying = true;
+                evt.detail.requestConfig.headers['X-WP-NONCE'] = data.nonce;
+                htmx.ajax(evt.detail.requestConfig.verb, evt.detail.requestConfig.path, {
+                    source: evt.detail.requestConfig.target,
+                    event: evt.detail.requestConfig.event,
+                    values: evt.detail.requestConfig.values,
+                    headers: { 'X-WP-NONCE': data.nonce }
+                });
+            }
+        })
+        .catch(function(err) {
+            console.error('[Storefront Zero] Nonce auto-retry failed:', err);
+        });
+});
+
+/**
+ * Toast notification integration with HTMX responses.
+ * Parses HX-Trigger headers for showToast events and injects toast elements.
+ */
+document.addEventListener('htmx:afterSwap', function(evt) {
+    var triggerHeader = evt.detail.xhr?.getResponseHeader('HX-Trigger');
+    if (!triggerHeader) return;
+
+    try {
+        var triggers = JSON.parse(triggerHeader);
+        if (triggers.showToast) {
+            var toast = document.createElement('toast-notification');
+            toast.setAttribute('message', triggers.showToast.message || '');
+            toast.setAttribute('type', triggers.showToast.type || 'success');
+            document.body.appendChild(toast);
+        }
+    } catch (e) {
+        // HX-Trigger header is not JSON — ignore.
+    }
+});
+
+/**
  * Web Component registration confirmation
  * Logs registered components on load for debugging.
  * Components self-register via customElements.define() in their own files.

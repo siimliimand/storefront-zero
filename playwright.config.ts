@@ -26,9 +26,7 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    command: 'echo "WordPress must be running at http://localhost:8080 (ddev start)"',
-    url: 'http://localhost:8080',
-    reuseExistingServer: true,
-  },
+  // In CI, WordPress is started by scripts/setup-wp.sh before tests run.
+  // Locally, start WordPress yourself (e.g., `ddev start`) before running tests.
+  // Playwright will verify the server is reachable via baseURL before executing tests.
 });

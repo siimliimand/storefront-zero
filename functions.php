@@ -292,6 +292,15 @@ function storefront_zero_flight_init(): void {
 
 	require_once __DIR__ . '/app/routes.php';
 
+	// Persist WooCommerce session after Flight handles the request.
+	Flight::after( 'start', function () {
+		try {
+			WC()->session->save_data();
+		} catch ( \Throwable $e ) {
+			// Session errors must not break the request.
+		}
+	} );
+
 	Flight::start();
 	exit;
 }

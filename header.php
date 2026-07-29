@@ -12,6 +12,17 @@
     <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preload" href="<?php echo esc_url( get_template_directory_uri() . '/assets/fonts/inter-latin.woff2' ); ?>" as="font" type="font/woff2" crossorigin>
+    <script>
+    (function() {
+        var preference = localStorage.getItem('sz-dark-mode');
+        var shouldBeDark = preference === 'dark' || (preference === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (shouldBeDark) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    })();
+    </script>
     <?php wp_head(); ?>
 </head>
 

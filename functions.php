@@ -359,3 +359,18 @@ function storefront_zero_lazy_product_images( array $attr, \WP_Post $attachment,
 	return $attr;
 }
 add_filter( 'wp_get_attachment_image_attributes', 'storefront_zero_lazy_product_images', 10, 3 );
+
+/**
+ * Purge cached search transients when products change.
+ *
+ * Deletes the sz_search_hash transient to ensure search results
+ * reflect the latest product data.
+ *
+ * @return void
+ */
+function storefront_zero_purge_search_transients(): void {
+	delete_transient( 'sz_search_hash' );
+}
+add_action( 'save_post_product', 'storefront_zero_purge_search_transients' );
+add_action( 'woocommerce_update_product', 'storefront_zero_purge_search_transients' );
+add_action( 'delete_post', 'storefront_zero_purge_search_transients' );

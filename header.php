@@ -60,6 +60,11 @@
                         hx-indicator=".search-spinner"
                         autocomplete="off"
                         aria-label="<?php esc_attr_e( 'Search products', 'storefront-zero' ); ?>"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-expanded="false"
+                        aria-controls="search-results"
+                        aria-activedescendant=""
                     />
                     <span class="search-spinner htmx-indicator absolute right-3 top-1/2 -translate-y-1/2" role="status" aria-label="<?php esc_attr_e( 'Searching...', 'storefront-zero' ); ?>">
                         <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -69,7 +74,7 @@
                     </span>
                     
                     <!-- Search results dropdown -->
-                    <div id="search-results" class="absolute z-50 w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg mt-1 hidden" aria-live="polite">
+                    <div id="search-results" role="listbox" class="absolute z-50 w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg mt-1 hidden" aria-live="polite">
                     </div>
                 </form>
             </div>

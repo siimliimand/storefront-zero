@@ -60,8 +60,6 @@ if ( $product->is_in_stock() ) :
 
 		<button
 			type="submit"
-			name="add-to-cart"
-			value="<?php echo esc_attr( $product_id ); ?>"
 			class="single_add_to_cart_button button alt px-6 py-2 bg-brand-600 text-white font-semibold rounded hover:bg-brand-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed <?php echo esc_attr( wc_wp_theme_get_element_class_name( 'button' ) ? ' ' . wc_wp_theme_get_element_class_name( 'button' ) : '' ); ?>"
 		>
 			<?php echo esc_html( $product->single_add_to_cart_text() ); ?>

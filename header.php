@@ -75,6 +75,12 @@
                     
                     <!-- Search results dropdown -->
                     <div id="search-results" role="listbox" class="absolute z-50 w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg mt-1 hidden" aria-live="polite">
+                        <!-- Search results loading skeleton -->
+                        <div class="skeleton-search-results htmx-indicator animate-pulse p-2 space-y-2">
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -91,6 +97,11 @@
                      hx-swap="outerHTML"
                      aria-live="polite"
                      class="relative">
+                    <!-- Mini-cart loading skeleton -->
+                    <div class="skeleton-mini-cart htmx-indicator animate-pulse flex items-center space-x-2">
+                        <div class="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        <div class="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                    </div>
                 </div>
 
                 <mobile-drawer>

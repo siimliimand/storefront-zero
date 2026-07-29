@@ -50,6 +50,8 @@ class CartController
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
+		ob_start();
+
 		$data = Flight::request()->data ?: [];
 
 		$product_id  = isset( $data['product_id'] ) ? absint( $data['product_id'] ) : 0;
@@ -57,8 +59,10 @@ class CartController
 		$variation_id = isset( $data['variation_id'] ) ? absint( $data['variation_id'] ) : 0;
 
 		if ( empty( $product_id ) || ! wc_get_product( $product_id ) ) {
+			ob_end_clean();
 			status_header( 400 );
 			$this->view->render( 'cart-error', [ 'message' => __( 'Invalid product. Please try again.', 'storefront-zero' ) ] );
+			echo $this->flush_wc_notices();
 			return;
 		}
 
@@ -87,6 +91,8 @@ class CartController
 			status_header( 400 );
 			$this->view->render( 'cart-error', [ 'message' => __( 'Could not add product to cart. Please try again.', 'storefront-zero' ) ] );
 		}
+
+		echo $this->flush_wc_notices();
 	}
 
 	/**
@@ -110,12 +116,16 @@ class CartController
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
+		ob_start();
+
 		$cart_item_key = isset( Flight::request()->data['cart_item_key'] ) ? sanitize_text_field( wp_unslash( Flight::request()->data['cart_item_key'] ) ) : '';
 		$quantity      = isset( Flight::request()->data['quantity'] ) ? absint( Flight::request()->data['quantity'] ) : 1;
 
 		if ( empty( $cart_item_key ) ) {
+			ob_end_clean();
 			status_header( 400 );
 			echo '<!-- Invalid cart item key -->';
+			echo $this->flush_wc_notices();
 			return;
 		}
 
@@ -134,6 +144,8 @@ class CartController
 			status_header( 400 );
 			echo '<!-- Could not update cart -->';
 		}
+
+		echo $this->flush_wc_notices();
 	}
 
 	/**
@@ -144,11 +156,15 @@ class CartController
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
+		ob_start();
+
 		$cart_item_key = isset( Flight::request()->data['cart_item_key'] ) ? sanitize_text_field( wp_unslash( Flight::request()->data['cart_item_key'] ) ) : '';
 
 		if ( empty( $cart_item_key ) ) {
+			ob_end_clean();
 			status_header( 400 );
 			echo '<!-- Invalid cart item key -->';
+			echo $this->flush_wc_notices();
 			return;
 		}
 
@@ -161,5 +177,38 @@ class CartController
 			status_header( 400 );
 			echo '<!-- Could not remove cart item -->';
 		}
+
+		echo $this->flush_wc_notices();
+	}
+
+	/**
+	 * Capture WooCommerce notices and set HX-Trigger header for toast display.
+	 *
+	 * Reads all WC notices, clears them to prevent double-display, and returns
+	 * the first notice as an HX-Trigger JSON header. If no notices exist,
+	 * returns an empty string.
+	 *
+	 * @return string HTML-safe empty string or empty output (header is set as side effect).
+	 */
+	private function flush_wc_notices(): string
+	{
+		$notices = wc_get_notices();
+		wc_clear_notices();
+
+		if ( ! empty( $notices ) ) {
+			$notice = reset( $notices );
+			$type   = $notice['type'] ?? 'notice';
+
+			header(
+				'HX-Trigger: ' . wp_json_encode( [
+					'showToast' => [
+						'message' => $notice['notice'] ?? '',
+						'type'    => $type,
+					],
+				] )
+			);
+		}
+
+		return '';
 	}
 }

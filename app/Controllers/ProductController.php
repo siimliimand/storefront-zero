@@ -108,6 +108,8 @@ class ProductController
     {
         header( 'Content-Type: text/html; charset=utf-8' );
 
+        ob_start();
+
         $request = Flight::request();
 
         // Sanitise all inputs.
@@ -258,5 +260,38 @@ class ProductController
             'products' => $product_query->posts,
             'query'    => $product_query,
         ] );
+
+        echo $this->flush_wc_notices();
+    }
+
+    /**
+     * Capture WooCommerce notices and set HX-Trigger header for toast display.
+     *
+     * Reads all WC notices, clears them to prevent double-display, and returns
+     * the first notice as an HX-Trigger JSON header. If no notices exist,
+     * returns an empty string.
+     *
+     * @return string HTML-safe empty string (header is set as side effect).
+     */
+    private function flush_wc_notices(): string
+    {
+        $notices = wc_get_notices();
+        wc_clear_notices();
+
+        if ( ! empty( $notices ) ) {
+            $notice = reset( $notices );
+            $type   = $notice['type'] ?? 'notice';
+
+            header(
+                'HX-Trigger: ' . wp_json_encode( [
+                    'showToast' => [
+                        'message' => $notice['notice'] ?? '',
+                        'type'    => $type,
+                    ],
+                ] )
+            );
+        }
+
+        return '';
     }
 }

@@ -45,6 +45,7 @@ services:
 
   provision:
     image: wordpress:cli-php8.3
+    user: root
     depends_on:
       wp:
         condition: service_healthy

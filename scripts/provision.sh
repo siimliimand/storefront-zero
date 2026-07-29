@@ -57,21 +57,28 @@ create_product() {
   local name="$1"
   local price="$2"
 
-  wp wc product create \
+  PROD_ID=$(wp wc product create \
     --path="$WP_PATH" \
     --user=admin \
     --name="$name" \
     --regular_price="$price" \
     --status=publish \
     --type=simple \
-    --allow-root 2>/dev/null || \
-  wp post create \
-    --path="$WP_PATH" \
-    --allow-root \
-    --post_type=product \
-    --post_title="$name" \
-    --post_status=publish \
-    --porcelain
+    --porcelain \
+    --allow-root 2>/dev/null) || true
+
+  if [ -z "$PROD_ID" ]; then
+    PROD_ID=$(wp post create \
+      --path="$WP_PATH" \
+      --post_type=product \
+      --post_title="$name" \
+      --post_status=publish \
+      --porcelain \
+      --allow-root)
+    wp post meta update "$PROD_ID" _price "$price" --path="$WP_PATH" --allow-root 2>/dev/null || true
+    wp post meta update "$PROD_ID" _regular_price "$price" --path="$WP_PATH" --allow-root 2>/dev/null || true
+    wp post meta update "$PROD_ID" _stock_status instock --path="$WP_PATH" --allow-root 2>/dev/null || true
+  fi
 }
 
 create_product "Blue Cotton Shirt" "39.99"

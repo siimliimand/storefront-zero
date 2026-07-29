@@ -88,7 +88,7 @@ jobs:
 
       - name: Start WordPress + WooCommerce (Docker Compose)
         run: |
-          docker compose up -d wp provision
+          docker compose up -d wp
 
           echo "Waiting for WordPress container..."
           for i in $(seq 1 60); do
@@ -98,11 +98,14 @@ jobs:
             fi
             if [ "$i" -eq 60 ]; then
               echo "WordPress container failed to start"
-              docker compose logs
+              docker compose logs wp
               exit 1
             fi
             sleep 2
           done
+
+          echo "Provisioning WordPress + WooCommerce..."
+          docker compose run --rm provision
 
       - name: Run E2E tests
         run: npm run test:e2e

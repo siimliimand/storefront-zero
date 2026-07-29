@@ -90,6 +90,7 @@ create_product() {
   fi
 }
 
+create_product "Test Product" "29.99"
 create_product "Blue Cotton Shirt" "39.99"
 create_product "Graphic T-Shirt" "24.99"
 create_product "Baseball Cap" "19.99"

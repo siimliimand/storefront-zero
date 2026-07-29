@@ -124,9 +124,11 @@ jobs:
       # processes are killed when a step ends). Start it here, then run tests.
       - name: Start WordPress server + Run E2E tests
         run: |
-          cd /tmp/wordpress
-          SCRIPT_DIR="$(pwd)/../../storefront-zero/scripts"
-          php -S "0.0.0.0:8080" "$SCRIPT_DIR/router.php" > /tmp/wp-server.log 2>&1 &
+          WP_DIR="/tmp/wordpress"
+          THEME_SCRIPTS="$WP_DIR/wp-content/themes/storefront-zero/scripts"
+
+          cd "$WP_DIR"
+          php -S "0.0.0.0:8080" "$THEME_SCRIPTS/router.php" > /tmp/wp-server.log 2>&1 &
           WP_PID=$!
           echo "WordPress server PID: $WP_PID"
 
@@ -135,6 +137,11 @@ jobs:
             if curl -sf http://localhost:8080/ > /dev/null 2>&1; then
               echo "WordPress is ready"
               break
+            fi
+            if [ "$i" -eq 20 ]; then
+              echo "WordPress failed to start"
+              cat /tmp/wp-server.log
+              exit 1
             fi
             sleep 1
           done

@@ -38,8 +38,8 @@ wp core install \
   --admin_email=admin@example.com \
   --allow-root 2>/dev/null || true
 
-# Install WooCommerce
-wp plugin install woocommerce --activate --path="$WP_DIR" --allow-root 2>/dev/null || true
+# Install WooCommerce (pinned to same version as local CI)
+wp plugin install woocommerce --version=9.6.0 --activate --path="$WP_DIR" --allow-root 2>/dev/null || true
 
 # Copy the theme into wp-content/themes/
 THEME_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -54,7 +54,8 @@ cd - > /dev/null
 # Activate the theme
 wp theme activate storefront-zero --path="$WP_DIR" --allow-root 2>/dev/null || true
 
-# Flush rewrite rules
+# Set permalink structure BEFORE flushing rewrites
+wp rewrite structure '/%postname%/' --path="$WP_DIR" --allow-root 2>/dev/null || true
 wp rewrite flush --path="$WP_DIR" --allow-root 2>/dev/null || true
 
 # Create a sample product for E2E tests
@@ -74,11 +75,20 @@ wp post create \
   --post_status=publish \
   --porcelain
 
-# Create shop page if WooCommerce created it
-wp option get woocommerce_shop_page_id --path="$WP_DIR" --allow-root 2>/dev/null || true
+# Create a Cart page with the WooCommerce cart shortcode
+CART_PAGE_ID=$(wp post create \
+  --path="$WP_DIR" \
+  --post_type=page \
+  --post_title="Cart" \
+  --post_status=publish \
+  --post_content="[woocommerce_cart]" \
+  --porcelain \
+  --allow-root)
+wp option update woocommerce_cart_page_id "$CART_PAGE_ID" \
+  --path="$WP_DIR" --allow-root 2>/dev/null || true
 
-# Set permalink structure
-wp rewrite structure '/%postname%/' --path="$WP_DIR" --allow-root 2>/dev/null || true
+# Ensure WooCommerce shop page exists
+wp option get woocommerce_shop_page_id --path="$WP_DIR" --allow-root 2>/dev/null || true
 
 echo "==> WordPress provisioning complete at ${WP_DIR}"
 echo "==> To start the server: php -S 0.0.0.0:${WP_PORT} scripts/router.php (from WP_DIR)"

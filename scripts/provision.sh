@@ -11,10 +11,12 @@ until [ -f "$WP_PATH/wp-includes/version.php" ]; do
 done
 sleep 5
 
-echo "==> Installing WP-CLI..."
-curl -sO https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-chmod +x wp-cli.phar
-mv wp-cli.phar /usr/local/bin/wp
+if ! command -v wp >/dev/null 2>&1; then
+  echo "==> Installing WP-CLI..."
+  curl -sSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /tmp/wp-cli.phar
+  chmod +x /tmp/wp-cli.phar
+  mv /tmp/wp-cli.phar /usr/local/bin/wp
+fi
 
 echo "==> Configuring WordPress..."
 wp config create \

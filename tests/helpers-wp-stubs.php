@@ -171,9 +171,14 @@ if (!class_exists('WC_Cart')) {
      */
     class WC_Cart
     {
-        public function add_to_cart(int $product_id, int $quantity = 1, int $variation_id = 0, array $variation = []): bool
+        public function add_to_cart(int $product_id, int $quantity = 1, int $variation_id = 0, array $variation = []): string|false
         {
-            return true;
+            return 'stub_cart_item_key';
+        }
+
+        public function get_cart_item(string $cart_item_key): array
+        {
+            return [];
         }
 
         public function set_quantity(string $cart_item_key, int $quantity = 1): bool
@@ -309,6 +314,78 @@ if (!class_exists('WcProductsStub')) {
         {
             self::$callback = null;
             self::$products = [];
+        }
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| WP_Query stub (controllable per-test via static storage)
+|--------------------------------------------------------------------------
+*/
+
+if (!class_exists('WP_Query')) {
+    class WP_Query
+    {
+        /** @var list<int> Product IDs to return as posts. */
+        private static array $defaultPosts = [];
+
+        /** @var array<string, mixed> Captured constructor args from the last call. */
+        private static array $lastArgs = [];
+
+        /** @var \Closure|null Optional callback to dynamically generate posts. */
+        private static ?\Closure $callback = null;
+
+        /**
+         * Set the product IDs that the query will return.
+         *
+         * @param list<int> $posts
+         */
+        public static function setPosts(array $posts): void
+        {
+            self::$defaultPosts = $posts;
+        }
+
+        /**
+         * Set a callback that dynamically generates the posts array.
+         *
+         * The callback receives the WP_Query constructor args and should return
+         * a list of product IDs (integers).
+         */
+        public static function setCallback(callable $cb): void
+        {
+            self::$callback = Closure::fromCallable($cb);
+        }
+
+        /**
+         * Get the constructor args from the most recent query.
+         *
+         * @return array<string, mixed>
+         */
+        public static function getLastArgs(): array
+        {
+            return self::$lastArgs;
+        }
+
+        public static function reset(): void
+        {
+            self::$defaultPosts = [];
+            self::$lastArgs = [];
+            self::$callback = null;
+        }
+
+        /** @var list<int> */
+        public array $posts = [];
+
+        public function __construct(array $args = [])
+        {
+            self::$lastArgs = $args;
+
+            if (self::$callback !== null) {
+                $this->posts = (self::$callback)($args);
+            } else {
+                $this->posts = self::$defaultPosts;
+            }
         }
     }
 }

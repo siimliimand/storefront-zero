@@ -97,7 +97,7 @@ it('returns 400 status on failed add-to-cart', function () {
 it('renders mini-cart-fragment view', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/CartController.php');
 
-    expect($source)->toContain('$this->view->render( \'mini-cart-fragment\' )');
+    expect($source)->toContain('$this->view->render( \'mini-cart-fragment\'');
 });
 
 /*

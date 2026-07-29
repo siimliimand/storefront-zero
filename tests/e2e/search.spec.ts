@@ -23,7 +23,7 @@ test.describe('HTMX Live Search', () => {
       { timeout: 10000 },
     );
 
-    await searchInput.type('shirt', { delay: 30 });
+    await searchInput.type('Test', { delay: 30 });
 
     // HTMX fires after 300ms debounce. Wait for the response.
     const response = await searchResponsePromise;
@@ -39,13 +39,13 @@ test.describe('HTMX Live Search', () => {
     // The dropdown should be hidden initially.
     await expect(searchResults).toBeHidden();
 
-    // Type a query and wait for the HTMX response.
+    // Type a query that matches the test product and wait for the HTMX response.
     const searchResponsePromise = page.waitForResponse(
       (resp) => resp.url().includes('/htmx-api/search') && resp.request().method() === 'GET',
       { timeout: 10000 },
     );
 
-    await searchInput.type('shirt', { delay: 30 });
+    await searchInput.type('Test', { delay: 30 });
     const response = await searchResponsePromise;
 
     // Allow HTMX to swap the fragment into the DOM.
@@ -72,7 +72,7 @@ test.describe('HTMX Live Search', () => {
       { timeout: 10000 },
     );
 
-    await searchInput.type('shirt', { delay: 30 });
+    await searchInput.type('Test', { delay: 30 });
     await searchResponsePromise;
     await page.waitForTimeout(500);
 
@@ -127,7 +127,7 @@ test.describe('HTMX Live Search', () => {
       { timeout: 10000 },
     );
 
-    await searchInput.type('shirt', { delay: 30 });
+    await searchInput.type('Test', { delay: 30 });
     await searchResponsePromise;
     await page.waitForTimeout(500);
 
@@ -149,7 +149,7 @@ test.describe('HTMX Live Search', () => {
       { timeout: 10000 },
     );
 
-    await searchInput.type('shirt', { delay: 30 });
+    await searchInput.type('Test', { delay: 30 });
     await searchResponsePromise;
     await page.waitForTimeout(500);
 
@@ -172,7 +172,7 @@ test.describe('HTMX Live Search', () => {
       await route.continue();
     });
 
-    await searchInput.type('shirt', { delay: 30 });
+    await searchInput.type('Test', { delay: 30 });
 
     // The spinner should become visible during the delayed request.
     await expect(spinner).toBeVisible({ timeout: 3000 });

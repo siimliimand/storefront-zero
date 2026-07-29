@@ -37,6 +37,7 @@ beforeEach(function () {
     FakeProductView::reset();
     WpTransientStore::reset();
     WcProductsStub::reset();
+    WP_Query::reset();
     ob_start();
 });
 
@@ -76,11 +77,9 @@ it('queries products and renders search-results view', function () {
         public int $id = 20;
     };
 
+    // WP_Query returns IDs; wc_get_products hydrates to objects.
+    WP_Query::setPosts([10, 20]);
     WcProductsStub::setCallback(function (array $args) use ($product1, $product2) {
-        if (($args['return'] ?? '') === 'ids') {
-            return [10, 20];
-        }
-
         return [$product1, $product2];
     });
 
@@ -103,7 +102,8 @@ it('queries products and renders search-results view', function () {
 */
 
 it('renders search-results with empty array when no products match', function () {
-    WcProductsStub::setCallback(fn (array $args) => []);
+    // WP_Query returns no IDs, so no hydration happens.
+    WP_Query::setPosts([]);
 
     $view       = new FakeProductView();
     $controller = new ProductController($view);
@@ -127,14 +127,9 @@ it('stores product IDs in transient after first query', function () {
         public int $id = 42;
     };
 
-    $callCount = 0;
-    WcProductsStub::setCallback(function (array $args) use ($product, &$callCount) {
-        $callCount++;
-
-        if (($args['return'] ?? '') === 'ids') {
-            return [42];
-        }
-
+    // WP_Query returns the IDs; wc_get_products hydrates.
+    WP_Query::setPosts([42]);
+    WcProductsStub::setCallback(function (array $args) use ($product) {
         return [$product];
     });
 
@@ -144,10 +139,7 @@ it('stores product IDs in transient after first query', function () {
     Flight::request()->query['s'] = 'cap';
     $controller->liveSearch();
 
-    // First call should hit the DB via wc_get_products
-    expect($callCount)->toBe(2);
-
-    // Verify transient was set with the product IDs
+    // Verify transient was set with the product IDs from WP_Query
     $cacheKey = 'sz_search_' . hash('xxh3', 'cap');
     expect(WpTransientStore::get($cacheKey))->toBe([42]);
 });
@@ -197,11 +189,8 @@ it('returns cached product IDs from transient on subsequent calls', function () 
 */
 
 it('sanitises the query input before searching', function () {
-    $capturedArgs = [];
-    WcProductsStub::setCallback(function (array $args) use (&$capturedArgs) {
-        $capturedArgs[] = $args;
-        return [];
-    });
+    // WP_Query captures the sanitized query in its constructor args.
+    WP_Query::setPosts([]);
 
     $view       = new FakeProductView();
     $controller = new ProductController($view);
@@ -209,9 +198,11 @@ it('sanitises the query input before searching', function () {
     Flight::request()->query['s'] = '  <script>alert("xss")</script>  ';
     $controller->liveSearch();
 
+    $lastArgs = WP_Query::getLastArgs();
+
     // sanitize_text_field strips tags and trims
-    expect($capturedArgs[0]['s'])->not->toContain('<script>');
-    expect($capturedArgs[0]['s'])->toBe('alert("xss")');
+    expect($lastArgs['s'])->not->toContain('<script>');
+    expect($lastArgs['s'])->toBe('alert("xss")');
 });
 
 /*
@@ -221,11 +212,9 @@ it('sanitises the query input before searching', function () {
 */
 
 it('filters out null products from hydration results', function () {
+    // WP_Query returns IDs; wc_get_products hydrates with one null.
+    WP_Query::setPosts([10, 99]);
     WcProductsStub::setCallback(function (array $args) {
-        if (($args['return'] ?? '') === 'ids') {
-            return [10, 99];
-        }
-
         // ID 99 doesn't exist — returns null
         return [
             new class {

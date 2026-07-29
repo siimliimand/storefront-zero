@@ -50,21 +50,33 @@ echo "==> Setting permalinks..."
 wp rewrite structure '/%postname%/' --path="$WP_PATH" --allow-root
 wp rewrite flush --path="$WP_PATH" --allow-root
 
-echo "==> Creating sample product..."
-wp wc product create \
-  --path="$WP_PATH" \
-  --user=admin \
-  --name="Test Product" \
-  --regular_price="29.99" \
-  --status=publish \
-  --type=simple \
-  --allow-root 2>/dev/null || \
-wp post create \
-  --path="$WP_PATH" \
-  --allow-root \
-  --post_type=product \
-  --post_title="Test Product" \
-  --post_status=publish \
-  --porcelain
+echo "==> Creating sample products..."
+
+# Create products that match E2E test search queries.
+create_product() {
+  local name="$1"
+  local price="$2"
+
+  wp wc product create \
+    --path="$WP_PATH" \
+    --user=admin \
+    --name="$name" \
+    --regular_price="$price" \
+    --status=publish \
+    --type=simple \
+    --allow-root 2>/dev/null || \
+  wp post create \
+    --path="$WP_PATH" \
+    --allow-root \
+    --post_type=product \
+    --post_title="$name" \
+    --post_status=publish \
+    --porcelain
+}
+
+create_product "Blue Cotton Shirt" "39.99"
+create_product "Graphic T-Shirt" "24.99"
+create_product "Baseball Cap" "19.99"
+create_product "Running Shoes" "89.99"
 
 echo "==> Provisioning complete!"

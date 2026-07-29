@@ -32,9 +32,9 @@ if ( $product->is_in_stock() ) :
 		action="<?php echo $add_to_cart_url; ?>"
 		method="post"
 		enctype="multipart/form-data"
-		hx-post="<?php echo $add_to_cart_url; ?>"
-		hx-target="#add-to-cart-response"
-		hx-swap="innerHTML"
+		hx-post="<?php echo esc_url( home_url( '/htmx-api/cart/add' ) ); ?>"
+		hx-target="#mini-cart-container"
+		hx-swap="outerHTML"
 		hx-indicator="#add-to-cart-spinner"
 	>
 		<input type="hidden" name="product_id" value="<?php echo esc_attr( $product_id ); ?>">
@@ -67,7 +67,7 @@ if ( $product->is_in_stock() ) :
 			<?php echo esc_html( $product->single_add_to_cart_text() ); ?>
 		</button>
 
-		<span id="add-to-cart-spinner" class="htmx-indicator inline-block ml-2">
+		<span id="add-to-cart-spinner" class="htmx-indicator ml-2">
 			<span class="inline-block w-5 h-5 border-2 border-gray-300 dark:border-gray-600 border-t-brand-600 rounded-full animate-spin"></span>
 		</span>
 

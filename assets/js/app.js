@@ -21,7 +21,7 @@ document.addEventListener('htmx:afterSwap', function(evt) {
     }));
 
     // Re-initialize WooCommerce scripts on swapped content
-    if (window.jQuery) {
+    if (window.jQuery && typeof window.jQuery.fn.wc_variation_form === 'function') {
         var $ = window.jQuery;
         // Re-init variation forms
         $(evt.detail.target).find('.variations_form').wc_variation_form();

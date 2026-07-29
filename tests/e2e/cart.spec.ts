@@ -99,19 +99,19 @@ test.describe('HTMX Add to Cart', () => {
     // Capture the product name from the page heading.
     const productName = await page.locator('.product_title, h1.entry-title').first().textContent();
 
-    // Intercept the mini-cart re-fetch after add-to-cart.
-    const miniCartResponsePromise = page.waitForResponse(
-      (resp) => resp.url().includes('/htmx-api/cart/mini') && resp.status() === 200,
+    // Intercept the POST response from add-to-cart (which contains the added_product name).
+    const addResponsePromise = page.waitForResponse(
+      (resp) => resp.url().includes('/htmx-api/cart/add') && resp.request().method() === 'POST' && resp.status() === 200,
       { timeout: 10000 }
     );
 
     const addBtn = page.locator('button.single_add_to_cart_button, button[name="add-to-cart"]').first();
     await addBtn.click();
 
-    const miniCartResponse = await miniCartResponsePromise;
-    const body = await miniCartResponse.text();
+    const addResponse = await addResponsePromise;
+    const body = await addResponse.text();
 
-    // The mini-cart fragment should contain the product name.
+    // The POST response mini-cart fragment should contain the added product name.
     expect(body).toContain(productName?.trim() || '');
   });
 
@@ -119,18 +119,25 @@ test.describe('HTMX Add to Cart', () => {
     // Add a product via the shop archive (loop add-to-cart).
     await page.goto('/shop/');
     const addButton = page.locator('button[data-product-id], .add_to_cart_button').first();
-    const productId = await addButton.getAttribute('data-product-id');
-    await addButton.click();
 
-    // Wait for the mini-cart to update.
-    await page.waitForTimeout(1500);
+    // Wait for the HTMX add-to-cart POST to complete before navigating.
+    const addResponsePromise = page.waitForResponse(
+      (resp) => resp.url().includes('/htmx-api/cart/add') && resp.request().method() === 'POST',
+      { timeout: 10000 }
+    );
+    await addButton.click();
+    await addResponsePromise;
 
     // Navigate to the cart page.
     await page.goto('/cart/');
-    await page.locator('.woocommerce-cart-form, #cart-content').waitFor({ state: 'visible', timeout: 10000 });
 
-    // The cart table should have at least one item row.
-    const cartItems = page.locator('.woocommerce-cart-form__cart-item, .cart_item');
+    // Wait for the WooCommerce block cart to finish loading (is-loading class removed).
+    // The block cart renders both empty and filled states; JS toggles visibility.
+    const filledCart = page.locator('.wp-block-woocommerce-filled-cart-block');
+    await expect(filledCart).toBeVisible({ timeout: 15000 });
+
+    // The filled cart block should contain line items.
+    const cartItems = page.locator('.wp-block-woocommerce-cart-line-items-block > *');
     await expect(cartItems.first()).toBeVisible({ timeout: 10000 });
     expect(await cartItems.count()).toBeGreaterThanOrEqual(1);
   });
@@ -156,7 +163,7 @@ test.describe('HTMX Add to Cart', () => {
 
     // Should see a cart-empty notice or empty cart message.
     const emptyIndicator = page.locator(
-      '.cart-empty, .woocommerce-info, p:has-text("cart is empty"), p:has-text("No products in the cart")'
+      '.cart-empty, .woocommerce-info, h2:has-text("cart is empty"), h2:has-text("Your cart is currently empty"), p:has-text("cart is empty"), p:has-text("No products in the cart")'
     );
     await expect(emptyIndicator.first()).toBeVisible({ timeout: 10000 });
   });
@@ -242,7 +249,7 @@ test.describe('HTMX Add to Cart', () => {
     await expect(spinner).toBeHidden();
 
     // Slow down the response to observe the spinner state.
-    await page.route('**/product/**', async (route) => {
+    await page.route('**/htmx-api/cart/add', async (route) => {
       // Only delay POST requests (the add-to-cart submission).
       if (route.request().method() === 'POST') {
         await new Promise((r) => setTimeout(r, 500));

@@ -61,25 +61,33 @@ class ProductController
         $products  = get_transient( $cache_key );
 
         if ( false === $products ) {
-            $product_ids = wc_get_products( [
+            $query_result = new \WP_Query( [
+                's'              => $query,
                 'post_type'      => 'product',
                 'post_status'    => 'publish',
                 'posts_per_page' => 5,
-                's'              => $query,
-                'return'         => 'ids',
+                'search_columns' => [ 'post_title' ],
+                'fields'         => 'ids',
             ] );
+
+            $product_ids = $query_result->posts;
 
             set_transient( $cache_key, $product_ids, 60 );
             $products = $product_ids;
         }
 
         // Hydrate product IDs into WC_Product objects via a single batch query (avoids N+1).
-        $products = array_filter(
-            wc_get_products( [
-                'include' => $products,
-                'return'  => 'objects',
-            ] )
-        );
+        // Short-circuit on empty array: wc_get_products(['include' => []]) returns ALL products.
+        if ( empty( $products ) ) {
+            $products = [];
+        } else {
+            $products = array_filter(
+                wc_get_products( [
+                    'include' => $products,
+                    'return'  => 'objects',
+                ] )
+            );
+        }
 
         $this->view->render( 'search-results', [
             'products' => $products,

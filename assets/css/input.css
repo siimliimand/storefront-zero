@@ -40,6 +40,20 @@
 }
 
 @layer components {
+    /* HTMX indicator visibility — hides loading indicators by default,
+       shows them only while an HTMX request is in-flight on a parent. */
+    .htmx-indicator {
+        display: none;
+    }
+    .htmx-request .htmx-indicator,
+    .htmx-request.htmx-indicator {
+        display: inline-block;
+    }
+    .htmx-settling .htmx-indicator,
+    .htmx-settling.htmx-indicator {
+        display: inline-block;
+    }
+
     .btn-primary {
         @apply bg-brand-600 text-white px-4 py-2 rounded-lg font-medium
                hover:bg-brand-700 focus:ring-2 focus:ring-brand-500 focus:ring-offset-2

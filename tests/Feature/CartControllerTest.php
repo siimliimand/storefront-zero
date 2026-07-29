@@ -54,11 +54,16 @@ afterEach(function () {
 it('adds valid product to cart and renders mini-cart fragment', function () {
     \Flight::request()->data->setData(['product_id' => 42, 'quantity' => 2]);
 
+    $product = new class { public function get_name(): string { return 'Test Product'; } };
+
     $cart = $this->createMock(\WC_Cart::class);
     $cart->expects($this->once())
         ->method('add_to_cart')
         ->with(42, 2, 0, [])
-        ->willReturn(true);
+        ->willReturn('item_key_abc');
+    $cart->method('get_cart_item')
+        ->with('item_key_abc')
+        ->willReturn(['data' => $product]);
 
     $view = new FakeView();
     $controller = new CartController($cart, $view);
@@ -137,6 +142,8 @@ it('forwards variation attributes for variable products', function () {
         'attribute_size'  => 'large',
     ]);
 
+    $product = new class { public function get_name(): string { return 'Variable Product'; } };
+
     $cart = $this->createMock(\WC_Cart::class);
     $cart->expects($this->once())
         ->method('add_to_cart')
@@ -146,7 +153,10 @@ it('forwards variation attributes for variable products', function () {
             20,
             ['attribute_color' => 'red', 'attribute_size' => 'large']
         )
-        ->willReturn(true);
+        ->willReturn('item_key_xyz');
+    $cart->method('get_cart_item')
+        ->with('item_key_xyz')
+        ->willReturn(['data' => $product]);
 
     $view = new FakeView();
     $controller = new CartController($cart, $view);

@@ -75,8 +75,14 @@ class CartController
 		$added = $this->cart->add_to_cart( $product_id, $quantity, $variation_id, $variation );
 
 		if ( $added ) {
+			// Extract the added product name from the cart item.
+			$cart_item    = $this->cart->get_cart_item( $added );
+			$product_name = $cart_item && isset( $cart_item['data'] )
+				? $cart_item['data']->get_name()
+				: '';
+
 			header( 'HX-Trigger: cartUpdated' );
-			$this->renderMiniCart();
+			$this->renderMiniCart( [ 'added_product' => $product_name ] );
 		} else {
 			status_header( 400 );
 			$this->view->render( 'cart-error', [ 'message' => __( 'Could not add product to cart. Please try again.', 'storefront-zero' ) ] );
@@ -86,12 +92,14 @@ class CartController
 	/**
 	 * Render mini-cart HTML fragment.
 	 * Shows cart icon with item count badge; used by GET /htmx-api/cart/mini.
+	 *
+	 * @param array<string, mixed> $data Optional view data (e.g. added_product name).
 	 */
-	public function renderMiniCart(): void
+	public function renderMiniCart( array $data = [] ): void
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
-		$this->view->render( 'mini-cart-fragment' );
+		$this->view->render( 'mini-cart-fragment', $data );
 	}
 
 	/**

@@ -7,10 +7,14 @@ declare(strict_types=1);
  * #mini-cart-container via hx-get="/htmx-api/cart/mini".
  *
  * @package Storefront_Zero
+ *
+ * @var array{added_product?: string} $args View data. When a product is added
+ *      via addToCart(), 'added_product' contains the product name.
  */
 
-$cart_count = WC()->cart->get_cart_contents_count();
-$cart_total = WC()->cart->get_cart_subtotal();
+$cart_count  = WC()->cart->get_cart_contents_count();
+$cart_total  = WC()->cart->get_cart_subtotal();
+$added_product = $added_product ?? '';
 ?>
 <div id="mini-cart-container"
      hx-get="/htmx-api/cart/mini"
@@ -30,4 +34,14 @@ $cart_total = WC()->cart->get_cart_subtotal();
             </span>
         <?php endif; ?>
     </a>
+    <?php if ( '' !== $added_product ) : ?>
+        <div class="added-product-name absolute top-full right-0 mt-2 w-56 bg-white dark:bg-darkCard border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 z-50 text-sm text-gray-700 dark:text-gray-300">
+            <span class="block font-medium text-green-600 dark:text-green-400 mb-1">
+                <?php esc_html_e( 'Added to cart', 'storefront-zero' ); ?>
+            </span>
+            <span class="block">
+                <?php echo esc_html( $added_product ); ?>
+            </span>
+        </div>
+    <?php endif; ?>
 </div>

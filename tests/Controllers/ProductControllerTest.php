@@ -60,7 +60,7 @@ it('queries only published products limited to 5 results', function () {
 
     expect($source)->toContain("'post_status'    => 'publish'");
     expect($source)->toContain("'posts_per_page' => 5");
-    expect($source)->toContain("'return'         => 'ids'");
+    expect($source)->toContain("'fields'         => 'ids'");
 });
 
 it('hydrates cached IDs back to WC_Product objects', function () {

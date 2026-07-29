@@ -18,7 +18,7 @@ $added_product = $added_product ?? '';
 ?>
 <div id="mini-cart-container"
      hx-get="/htmx-api/cart/mini"
-     hx-trigger="load, cartUpdated from:body"
+     hx-trigger="cartUpdated from:body"
      hx-swap="outerHTML"
      aria-live="polite"
      class="relative">

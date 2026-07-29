@@ -61,9 +61,41 @@ if (!function_exists('status_header')) {
     }
 }
 
+if (!class_exists('HeaderCapture')) {
+    /**
+     * Records every header() call so tests can assert on output headers.
+     */
+    class HeaderCapture
+    {
+        /** @var list<string> */
+        private static array $headers = [];
+
+        public static function capture(string $raw): void
+        {
+            self::$headers[] = $raw;
+        }
+
+        /** @return list<string> */
+        public static function getHeaders(): array
+        {
+            return self::$headers;
+        }
+
+        public static function getLastHeader(): ?string
+        {
+            return end(self::$headers) ?: null;
+        }
+
+        public static function reset(): void
+        {
+            self::$headers = [];
+        }
+    }
+}
+
 if (!function_exists('header')) {
     function header(string $raw): void {
-        // No-op in tests.
+        \HeaderCapture::capture($raw);
     }
 }
 
@@ -336,6 +368,12 @@ if (!class_exists('WP_Query')) {
         /** @var \Closure|null Optional callback to dynamically generate posts. */
         private static ?\Closure $callback = null;
 
+        /** @var array<string, mixed> Key-value pairs set via set() on the last instance. */
+        private static array $lastSetValues = [];
+
+        /** Whether the query pretends to be the main query. */
+        private static bool $isMainQuery = false;
+
         /**
          * Set the product IDs that the query will return.
          *
@@ -367,11 +405,31 @@ if (!class_exists('WP_Query')) {
             return self::$lastArgs;
         }
 
+        /**
+         * Get key-value pairs set via the instance set() method (from pre_get_posts).
+         *
+         * @return array<string, mixed>
+         */
+        public static function getLastSetValues(): array
+        {
+            return self::$lastSetValues;
+        }
+
+        /**
+         * Configure whether the next WP_Query instance reports as main query.
+         */
+        public static function setIsMainQuery(bool $value): void
+        {
+            self::$isMainQuery = $value;
+        }
+
         public static function reset(): void
         {
             self::$defaultPosts = [];
             self::$lastArgs = [];
             self::$callback = null;
+            self::$lastSetValues = [];
+            self::$isMainQuery = false;
         }
 
         /** @var list<int> */
@@ -380,12 +438,36 @@ if (!class_exists('WP_Query')) {
         public function __construct(array $args = [])
         {
             self::$lastArgs = $args;
+            self::$lastSetValues = [];
 
             if (self::$callback !== null) {
                 $this->posts = (self::$callback)($args);
             } else {
                 $this->posts = self::$defaultPosts;
             }
+
+            // Simulate WordPress pre_get_posts hook — fire registered callbacks.
+            if (class_exists('WpHookStore')) {
+                foreach (WpHookStore::get('pre_get_posts') as $callback) {
+                    $callback($this);
+                }
+            }
+        }
+
+        /**
+         * Whether this is the main WordPress query.
+         */
+        public function is_main_query(): bool
+        {
+            return self::$isMainQuery;
+        }
+
+        /**
+         * Set a query argument (called by pre_get_posts callbacks).
+         */
+        public function set(string $key, mixed $value): void
+        {
+            self::$lastSetValues[$key] = $value;
         }
     }
 }
@@ -419,5 +501,163 @@ if (!function_exists('WC')) {
         }
 
         return $wc;
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| WooCommerce notices stubs (controllable per-test)
+|--------------------------------------------------------------------------
+*/
+
+if (!class_exists('WcNoticesStub')) {
+    class WcNoticesStub
+    {
+        /** @var array<int, array{type: string, notice: string}> */
+        private static array $notices = [];
+
+        private static int $getCalls = 0;
+
+        private static int $clearCalls = 0;
+
+        /**
+         * Pre-populate notices for the next wc_get_notices() call.
+         *
+         * @param array<int, array{type: string, notice: string}> $notices
+         */
+        public static function setNotices(array $notices): void
+        {
+            self::$notices = $notices;
+        }
+
+        /** @return array<int, array{type: string, notice: string}> */
+        public static function get(): array
+        {
+            self::$getCalls++;
+            return self::$notices;
+        }
+
+        public static function clear(): void
+        {
+            self::$clearCalls++;
+            self::$notices = [];
+        }
+
+        public static function getGetCalls(): int
+        {
+            return self::$getCalls;
+        }
+
+        public static function getClearCalls(): int
+        {
+            return self::$clearCalls;
+        }
+
+        public static function reset(): void
+        {
+            self::$notices = [];
+            self::$getCalls = 0;
+            self::$clearCalls = 0;
+        }
+    }
+}
+
+if (!function_exists('wc_get_notices')) {
+    function wc_get_notices(): array {
+        return \WcNoticesStub::get();
+    }
+}
+
+if (!function_exists('wc_clear_notices')) {
+    function wc_clear_notices(): void {
+        \WcNoticesStub::clear();
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| delete_transient stub
+|--------------------------------------------------------------------------
+*/
+
+if (!function_exists('delete_transient')) {
+    function delete_transient(string $key): bool {
+        \WpTransientStore::set($key, false);
+        return true;
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| get_option stub — returns default value (no database)
+|--------------------------------------------------------------------------
+*/
+
+if (!function_exists('get_option')) {
+    function get_option(string $option, mixed $default = false): mixed {
+        return $default;
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| home_url stub
+|--------------------------------------------------------------------------
+*/
+
+if (!function_exists('home_url')) {
+    function home_url(string $path = ''): string {
+        return 'https://example.com' . $path;
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Hook stubs (controllable per-test via WpHookStore)
+|--------------------------------------------------------------------------
+*/
+
+if (!class_exists('WpHookStore')) {
+    class WpHookStore
+    {
+        /** @var array<string, list<callable>> */
+        private static array $hooks = [];
+
+        /**
+         * Register a callback for a hook tag.
+         */
+        public static function add(string $tag, callable $callback, int $priority = 10): void
+        {
+            self::$hooks[$tag][] = $callback;
+        }
+
+        /**
+         * Get all callbacks registered for a hook tag.
+         *
+         * @return list<callable>
+         */
+        public static function get(string $tag): array
+        {
+            return self::$hooks[$tag] ?? [];
+        }
+
+        public static function reset(): void
+        {
+            self::$hooks = [];
+        }
+    }
+}
+
+if (!function_exists('add_action')) {
+    function add_action(string $tag, callable $callback, int $priority = 10, int $accepted_args = 1): bool {
+        \WpHookStore::add($tag, $callback, $priority);
+        return true;
+    }
+}
+
+if (!function_exists('add_filter')) {
+    function add_filter(string $tag, callable $callback, int $priority = 10, int $accepted_args = 1): bool {
+        \WpHookStore::add($tag, $callback, $priority);
+        return true;
     }
 }

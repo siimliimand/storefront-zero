@@ -44,12 +44,16 @@ chmod -R 777 "$WP_PATH/wp-content" 2>/dev/null || true
 echo "==> Installing WooCommerce (v9.6.0)..."
 wp plugin install woocommerce --version=9.6.0 --activate --path="$WP_PATH" --allow-root
 
-echo "==> Activating Storefront Zero..."
-wp theme activate storefront-zero --path="$WP_PATH" --allow-root
-
 echo "==> Installing theme Composer deps..."
 cd "$THEME_PATH"
-composer install --no-interaction --no-progress --prefer-dist 2>/dev/null || true
+if ! command -v composer >/dev/null 2>&1; then
+  curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer 2>/dev/null || true
+fi
+composer install --no-interaction --no-progress --prefer-dist
+cd - > /dev/null
+
+echo "==> Activating Storefront Zero..."
+wp theme activate storefront-zero --path="$WP_PATH" --allow-root
 
 echo "==> Setting permalinks..."
 wp rewrite structure '/%postname%/' --path="$WP_PATH" --allow-root

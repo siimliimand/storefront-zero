@@ -38,8 +38,8 @@ wp core install \
   --admin_email=admin@example.com \
   --allow-root
 
-mkdir -p "$WP_PATH/wp-content/uploads" 2>/dev/null || true
-chmod 777 "$WP_PATH/wp-content/uploads" 2>/dev/null || true
+mkdir -p "$WP_PATH/wp-content/plugins" "$WP_PATH/wp-content/upgrade" "$WP_PATH/wp-content/uploads" 2>/dev/null || true
+chmod -R 777 "$WP_PATH/wp-content" 2>/dev/null || true
 
 echo "==> Installing WooCommerce (v9.6.0)..."
 wp plugin install woocommerce --version=9.6.0 --activate --path="$WP_PATH" --allow-root

@@ -79,4 +79,16 @@ create_product "Graphic T-Shirt" "24.99"
 create_product "Baseball Cap" "19.99"
 create_product "Running Shoes" "89.99"
 
+# Create a Cart page with the classic WooCommerce cart shortcode
+CART_PAGE_ID=$(wp post create \
+  --path="$WP_PATH" \
+  --post_type=page \
+  --post_title="Cart" \
+  --post_status=publish \
+  --post_content="[woocommerce_cart]" \
+  --porcelain \
+  --allow-root 2>/dev/null || true)
+wp option update woocommerce_cart_page_id "$CART_PAGE_ID" \
+  --path="$WP_PATH" --allow-root 2>/dev/null || true
+
 echo "==> Provisioning complete!"

@@ -67,36 +67,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: js-build
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: wordpress
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          extensions: mysqli, intl, zip
-          coverage: none
-
-      - name: Install WP-CLI
-        run: |
-          curl -sO https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-          chmod +x wp-cli.phar
-          sudo mv wp-cli.phar /usr/local/bin/wp
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -113,45 +86,26 @@ jobs:
       - name: Build theme assets
         run: npm run build
 
-      - name: Provision WordPress + WooCommerce
-        run: bash scripts/setup-wp.sh
-        env:
-          WP_DIR: /tmp/wordpress
-          WP_PORT: 8080
-          DB_HOST: 127.0.0.1
-          DB_NAME: wordpress
-          DB_USER: root
-          DB_PASS: root
-
-      # PHP built-in server must run in the same step as tests (background
-      # processes are killed when a step ends). Start it here, then run tests.
-      - name: Start WordPress server + Run E2E tests
+      - name: Start WordPress + WooCommerce (Docker Compose)
         run: |
-          WP_DIR="/tmp/wordpress"
-          THEME_SCRIPTS="$WP_DIR/wp-content/themes/storefront-zero/scripts"
+          docker compose up -d wp provision
 
-          cd "$WP_DIR"
-          export PHP_CLI_SERVER_WORKERS=4
-          php -S "0.0.0.0:8080" "$THEME_SCRIPTS/router.php" > /tmp/wp-server.log 2>&1 &
-          WP_PID=$!
-          echo "WordPress server PID: $WP_PID"
-
-          # Wait for server to be ready
-          for i in $(seq 1 20); do
+          echo "Waiting for WordPress container..."
+          for i in $(seq 1 60); do
             if curl -sf http://localhost:8080/ > /dev/null 2>&1; then
-              echo "WordPress is ready"
+              echo "WordPress container is ready"
               break
             fi
-            if [ "$i" -eq 20 ]; then
-              echo "WordPress failed to start"
-              cat /tmp/wp-server.log
+            if [ "$i" -eq 60 ]; then
+              echo "WordPress container failed to start"
+              docker compose logs
               exit 1
             fi
-            sleep 1
+            sleep 2
           done
 
-          cd "$GITHUB_WORKSPACE"
-          npm run test:e2e
+      - name: Run E2E tests
+        run: npm run test:e2e
         env:
           CI: true
           CI_BASE_URL: "http://localhost:8080"
@@ -163,3 +117,8 @@ jobs:
           name: playwright-report
           path: test-results/
           retention-days: 7
+
+      - name: Stop Docker containers
+        if: always()
+        run: docker compose down -v
+

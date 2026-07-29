@@ -110,6 +110,9 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Build theme assets
+        run: npm run build
+
       - name: Provision WordPress + WooCommerce
         run: bash scripts/setup-wp.sh
         env:
@@ -128,6 +131,7 @@ jobs:
           THEME_SCRIPTS="$WP_DIR/wp-content/themes/storefront-zero/scripts"
 
           cd "$WP_DIR"
+          export PHP_CLI_SERVER_WORKERS=4
           php -S "0.0.0.0:8080" "$THEME_SCRIPTS/router.php" > /tmp/wp-server.log 2>&1 &
           WP_PID=$!
           echo "WordPress server PID: $WP_PID"

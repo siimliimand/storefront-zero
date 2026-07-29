@@ -58,22 +58,32 @@ wp theme activate storefront-zero --path="$WP_DIR" --allow-root 2>/dev/null || t
 wp rewrite structure '/%postname%/' --path="$WP_DIR" --allow-root 2>/dev/null || true
 wp rewrite flush --path="$WP_DIR" --allow-root 2>/dev/null || true
 
-# Create a sample product for E2E tests
-wp wc product create \
-  --path="$WP_DIR" \
-  --user=admin \
-  --name="Test Product" \
-  --regular_price="29.99" \
-  --status=publish \
-  --type=simple \
-  --allow-root 2>/dev/null || \
-wp post create \
-  --path="$WP_DIR" \
-  --allow-root \
-  --post_type=product \
-  --post_title="Test Product" \
-  --post_status=publish \
-  --porcelain
+# Create products that match E2E test search queries and cart flows
+create_product() {
+  local name="$1"
+  local price="$2"
+
+  wp wc product create \
+    --path="$WP_DIR" \
+    --user=admin \
+    --name="$name" \
+    --regular_price="$price" \
+    --status=publish \
+    --type=simple \
+    --allow-root 2>/dev/null || \
+  wp post create \
+    --path="$WP_DIR" \
+    --allow-root \
+    --post_type=product \
+    --post_title="$name" \
+    --post_status=publish \
+    --porcelain 2>/dev/null || true
+}
+
+create_product "Blue Cotton Shirt" "39.99"
+create_product "Graphic T-Shirt" "24.99"
+create_product "Baseball Cap" "19.99"
+create_product "Running Shoes" "89.99"
 
 # Create a Cart page with the WooCommerce cart shortcode
 CART_PAGE_ID=$(wp post create \

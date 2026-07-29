@@ -350,7 +350,7 @@ test.describe('HTMX Live Search', () => {
         // If not (e.g., Enter opens link in same tab but no navigation),
         // at least verify the dropdown is closed.
         if (url.includes('/product/')) {
-          await expect(page.locator('form.cart, .product')).toBeVisible({ timeout: 5000 });
+          await expect(page.locator('form.cart, .product').first()).toBeVisible({ timeout: 5000 });
         }
       }
     }

@@ -38,8 +38,11 @@ wp core install \
   --admin_email=admin@example.com \
   --allow-root
 
-echo "==> Installing WooCommerce..."
-wp plugin install woocommerce --activate --path="$WP_PATH" --allow-root
+mkdir -p "$WP_PATH/wp-content/uploads" 2>/dev/null || true
+chmod 777 "$WP_PATH/wp-content/uploads" 2>/dev/null || true
+
+echo "==> Installing WooCommerce (v9.6.0)..."
+wp plugin install woocommerce --version=9.6.0 --activate --path="$WP_PATH" --allow-root
 
 echo "==> Activating Storefront Zero..."
 wp theme activate storefront-zero --path="$WP_PATH" --allow-root

@@ -10,12 +10,54 @@ declare(strict_types=1);
  */
 
 // Composer autoloader.
-require_once __DIR__ . '/vendor/autoload.php';
+if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
+	require_once __DIR__ . '/vendor/autoload.php';
+}
 
 /**
  * Theme version for cache busting.
  */
 define( 'SZ_HTMX_VERSION', '1.9.10' );
+
+/**
+ * Get file modification time as a version string, with fallback.
+ *
+ * Returns the file's mtime when the file exists, otherwise falls back to
+ * '1.0.0' so cache-busting still works before the first build.
+ *
+ * @param string $path Absolute path to the file.
+ * @return string Version string.
+ */
+function storefront_zero_filemtime( string $path ): string {
+	$mtime = filemtime( $path );
+	return $mtime ? (string) $mtime : '1.0.0';
+}
+
+/**
+ * Resolve a JS file path, preferring the minified build output when available.
+ *
+ * Checks for a compiled version under assets/js/dist/ (output of
+ * `npm run build:js` via esbuild). Falls back to the source file so the
+ * theme works without a prior build step.
+ *
+ * @param string $source Relative path from theme root, e.g. 'assets/js/app.js'.
+ * @return array{0: string, 1: string} [absolute path, URI path].
+ */
+function storefront_zero_resolve_js( string $source ): array {
+	$dist = __DIR__ . '/assets/js/dist/' . basename( $source );
+
+	if ( file_exists( $dist ) ) {
+		return [
+			$dist,
+			get_template_directory_uri() . '/assets/js/dist/' . basename( $source ),
+		];
+	}
+
+	return [
+		__DIR__ . '/' . $source,
+		get_template_directory_uri() . '/' . $source,
+	];
+}
 
 /**
  * Enqueue theme assets: Tailwind CSS, HTMX, app JS, and Web Components.
@@ -28,7 +70,7 @@ function storefront_zero_enqueue_assets(): void {
 		'storefront-zero-style',
 		get_template_directory_uri() . '/assets/css/main.css',
 		[],
-		(string) filemtime( __DIR__ . '/assets/css/main.css' )
+		storefront_zero_filemtime( __DIR__ . '/assets/css/main.css' )
 	);
 
 	// HTMX — local vendor bundle for reliability and GDPR compliance.
@@ -41,11 +83,13 @@ function storefront_zero_enqueue_assets(): void {
 	);
 
 	// Theme app JS — depends on HTMX, loaded in footer.
+	[ $app_path, $app_uri ] = storefront_zero_resolve_js( 'assets/js/app.js' );
+
 	wp_enqueue_script(
 		'storefront-zero-app',
-		get_template_directory_uri() . '/assets/js/app.js',
+		$app_uri,
 		[ 'htmx' ],
-		(string) filemtime( __DIR__ . '/assets/js/app.js' ),
+		storefront_zero_filemtime( $app_path ),
 		true
 	);
 
@@ -59,19 +103,32 @@ function storefront_zero_enqueue_assets(): void {
 		]
 	);
 
+	// Quantity stepper - +/- buttons for WooCommerce quantity inputs.
+	[ $qty_path, $qty_uri ] = storefront_zero_resolve_js( 'assets/js/qty-stepper.js' );
+
+	wp_enqueue_script(
+		'storefront-zero-qty-stepper',
+		$qty_uri,
+		[ 'htmx' ],
+		storefront_zero_filemtime( $qty_path ),
+		true
+	);
+
 	// Web Components — explicit registration (no glob I/O on every page load).
 	$web_components = [
 		'mobile-drawer',
 		'toast-notification',
+		'dark-mode-toggle',
+		'product-variation-form',
 	];
 
 	foreach ( $web_components as $wc_name ) {
-		$wc_path     = __DIR__ . '/assets/js/web-components/' . $wc_name . '.js';
-		$wc_version  = (string) filemtime( $wc_path );
+		[ $wc_path, $wc_uri ] = storefront_zero_resolve_js( 'assets/js/web-components/' . $wc_name . '.js' );
+		$wc_version            = storefront_zero_filemtime( $wc_path );
 
 		wp_enqueue_script(
 			'sz-wc-' . $wc_name,
-			get_template_directory_uri() . '/assets/js/web-components/' . $wc_name . '.js',
+			$wc_uri,
 			[ 'htmx' ],
 			$wc_version,
 			true
@@ -170,6 +227,31 @@ function storefront_zero_widgets_init(): void {
 add_action( 'widgets_init', 'storefront_zero_widgets_init' );
 
 /**
+ * Register rewrite rule for HTMX API endpoints.
+ *
+ * Without this, WordPress returns 404 before template_redirect fires.
+ *
+ * @return void
+ */
+function storefront_zero_htmx_rewrite_rules(): void {
+	add_rewrite_rule( 'htmx-api/(.+?)/?$', 'index.php?htmx-api=$matches[1]', 'top' );
+	add_rewrite_rule( 'htmx-api/?$', 'index.php?htmx-api=', 'top' );
+}
+add_action( 'init', 'storefront_zero_htmx_rewrite_rules' );
+
+/**
+ * Register the htmx-api query variable so WordPress recognizes it.
+ *
+ * @param array<string> $vars Existing public query vars.
+ * @return array<string>
+ */
+function storefront_zero_htmx_query_vars( array $vars ): array {
+	$vars[] = 'htmx-api';
+	return $vars;
+}
+add_filter( 'query_vars', 'storefront_zero_htmx_query_vars' );
+
+/**
  * Intercept HTMX API requests and hand them off to Flight PHP.
  *
  * Only handles requests under /htmx-api — all other URLs proceed through
@@ -221,3 +303,40 @@ function storefront_zero_script_module_tag( string $tag, string $handle ): strin
 	return $tag;
 }
 add_filter( 'script_loader_tag', 'storefront_zero_script_module_tag', 10, 2 );
+
+/**
+ * Add defer attribute to the HTMX script tag.
+ *
+ * WordPress has no native `defer` parameter for wp_enqueue_script(), so we
+ * inject it via the script_loader_tag filter.
+ *
+ * @param string $tag    The script tag.
+ * @param string $handle The script handle.
+ * @return string Modified script tag.
+ */
+function storefront_zero_defer_htmx( string $tag, string $handle ): string {
+	if ( 'htmx' === $handle ) {
+		return str_replace( ' src=', ' defer src=', $tag );
+	}
+	return $tag;
+}
+add_filter( 'script_loader_tag', 'storefront_zero_defer_htmx', 20, 2 );
+
+/**
+ * Add loading="lazy" to WooCommerce product images on shop and archive pages.
+ *
+ * Filters wp_get_attachment_image_attributes only on WooCommerce product pages
+ * to avoid affecting above-the-fold images site-wide.
+ *
+ * @param array<string, string> $attr       Image attributes.
+ * @param \WP_Post              $attachment Attachment post object.
+ * @param string|int[]          $size       Requested image size.
+ * @return array<string, string> Modified attributes.
+ */
+function storefront_zero_lazy_product_images( array $attr, \WP_Post $attachment, $size ): array {
+	if ( is_woocommerce() ) {
+		$attr['loading'] = 'lazy';
+	}
+	return $attr;
+}
+add_filter( 'wp_get_attachment_image_attributes', 'storefront_zero_lazy_product_images', 10, 3 );

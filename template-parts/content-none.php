@@ -12,12 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <section class="no-results not-found py-12 text-center">
 	<header class="page-header mb-4">
-		<h1 class="page-title text-2xl font-bold">
+		<h1 class="page-title text-2xl font-bold dark:text-gray-100">
 			<?php esc_html_e( 'Nothing Found', 'storefront-zero' ); ?>
 		</h1>
 	</header>
 
-	<div class="page-content text-gray-600">
+	<div class="page-content text-gray-600 dark:text-gray-400">
 		<p><?php esc_html_e( 'It seems we can&rsquo;t find what you&rsquo;re looking for. Try searching?', 'storefront-zero' ); ?></p>
 		<?php get_search_form(); ?>
 	</div>

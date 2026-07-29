@@ -37,7 +37,7 @@ it('imports ThemeApp\View', function () {
 it('sanitizes search input with sanitize_text_field', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/ProductController.php');
 
-    expect($source)->toContain('sanitize_text_field( wp_unslash( $_GET[\'s\'] ) )');
+    expect($source)->toContain('sanitize_text_field( wp_unslash( Flight::request()->query[\'s\'] ) )');
 });
 
 it('returns empty output for empty search query', function () {
@@ -50,7 +50,7 @@ it('returns empty output for empty search query', function () {
 it('caches product IDs with a transient keyed by query hash', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/ProductController.php');
 
-    expect($source)->toContain("sz_search_' . md5( \$query )");
+    expect($source)->toContain("sz_search_' . hash( 'xxh3'");
     expect($source)->toContain('get_transient( $cache_key )');
     expect($source)->toContain('set_transient( $cache_key, $product_ids, 60 )');
 });
@@ -60,20 +60,20 @@ it('queries only published products limited to 5 results', function () {
 
     expect($source)->toContain("'post_status'    => 'publish'");
     expect($source)->toContain("'posts_per_page' => 5");
-    expect($source)->toContain("'return'         => 'ids'");
+    expect($source)->toContain("'fields'         => 'ids'");
 });
 
 it('hydrates cached IDs back to WC_Product objects', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/ProductController.php');
 
-    expect($source)->toContain("wc_get_product");
-    expect($source)->toContain('array_filter( array_map');
+    expect($source)->toContain("wc_get_products");
+    expect($source)->toContain("'include'");
 });
 
 it('renders search-results view with products and query', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/ProductController.php');
 
-    expect($source)->toContain("View::render( 'search-results'");
+    expect($source)->toContain("\$this->view->render( 'search-results'");
     expect($source)->toContain("'products' => \$products");
     expect($source)->toContain("'query'    => \$query");
 });

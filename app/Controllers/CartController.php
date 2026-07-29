@@ -11,59 +11,107 @@ declare(strict_types=1);
 
 namespace ThemeApp\Controllers;
 
+use Flight;
 use ThemeApp\View;
 
 class CartController
 {
 	/**
+	 * View instance for rendering templates.
+	 *
+	 * @var \ThemeApp\View
+	 */
+	private View $view;
+
+	/**
+	 * WooCommerce cart instance.
+	 *
+	 * @var \WC_Cart
+	 */
+	private \WC_Cart $cart;
+
+	/**
+	 * Constructor. Injected by the DI container.
+	 *
+	 * @param \WC_Cart     $cart WooCommerce cart instance.
+	 * @param \ThemeApp\View $view View renderer.
+	 */
+	public function __construct( \WC_Cart $cart, View $view )
+	{
+		$this->cart = $cart;
+		$this->view = $view;
+	}
+
+	/**
 	 * Add product to cart via HTMX POST.
 	 * Returns updated mini-cart fragment with HX-Trigger header.
 	 */
-	public static function addToCart(): void
+	public function addToCart(): void
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
-		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
-		$quantity   = isset( $_POST['quantity'] ) ? absint( $_POST['quantity'] ) : 1;
+		$data = Flight::request()->data ?: [];
+
+		$product_id  = isset( $data['product_id'] ) ? absint( $data['product_id'] ) : 0;
+		$quantity    = isset( $data['quantity'] ) ? absint( $data['quantity'] ) : 1;
+		$variation_id = isset( $data['variation_id'] ) ? absint( $data['variation_id'] ) : 0;
 
 		if ( empty( $product_id ) || ! wc_get_product( $product_id ) ) {
 			status_header( 400 );
-			View::render( 'cart-error', [ 'message' => __( 'Invalid product. Please try again.', 'storefront-zero' ) ] );
+			$this->view->render( 'cart-error', [ 'message' => __( 'Invalid product. Please try again.', 'storefront-zero' ) ] );
 			return;
 		}
 
-		$added = WC()->cart->add_to_cart( $product_id, $quantity );
+		// Collect attribute data for variable products.
+		$variation = [];
+		if ( $variation_id > 0 ) {
+			foreach ( $data as $key => $value ) {
+				if ( 0 === strpos( $key, 'attribute_' ) ) {
+					$variation[ $key ] = sanitize_text_field( wp_unslash( $value ) );
+				}
+			}
+		}
+
+		$added = $this->cart->add_to_cart( $product_id, $quantity, $variation_id, $variation );
 
 		if ( $added ) {
+			// Extract the added product name from the cart item.
+			$cart_item    = $this->cart->get_cart_item( $added );
+			$product_name = $cart_item && isset( $cart_item['data'] )
+				? $cart_item['data']->get_name()
+				: '';
+
 			header( 'HX-Trigger: cartUpdated' );
-			self::renderMiniCart();
+			$this->renderMiniCart( [ 'added_product' => $product_name ] );
 		} else {
 			status_header( 400 );
-			View::render( 'cart-error', [ 'message' => __( 'Could not add product to cart. Please try again.', 'storefront-zero' ) ] );
+			$this->view->render( 'cart-error', [ 'message' => __( 'Could not add product to cart. Please try again.', 'storefront-zero' ) ] );
 		}
 	}
 
 	/**
 	 * Render mini-cart HTML fragment.
 	 * Shows cart icon with item count badge; used by GET /htmx-api/cart/mini.
+	 *
+	 * @param array<string, mixed> $data Optional view data (e.g. added_product name).
 	 */
-	public static function renderMiniCart(): void
+	public function renderMiniCart( array $data = [] ): void
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
-		View::render( 'mini-cart-fragment' );
+		$this->view->render( 'mini-cart-fragment', $data );
 	}
 
 	/**
 	 * Update cart item quantity via HTMX POST.
 	 * Returns updated mini-cart fragment with HX-Trigger header.
 	 */
-	public static function updateQuantity(): void
+	public function updateQuantity(): void
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
-		$cart_item_key = isset( $_POST['cart_item_key'] ) ? sanitize_text_field( wp_unslash( $_POST['cart_item_key'] ) ) : '';
-		$quantity      = isset( $_POST['quantity'] ) ? absint( $_POST['quantity'] ) : 1;
+		$cart_item_key = isset( Flight::request()->data['cart_item_key'] ) ? sanitize_text_field( wp_unslash( Flight::request()->data['cart_item_key'] ) ) : '';
+		$quantity      = isset( Flight::request()->data['quantity'] ) ? absint( Flight::request()->data['quantity'] ) : 1;
 
 		if ( empty( $cart_item_key ) ) {
 			status_header( 400 );
@@ -74,14 +122,14 @@ class CartController
 		$success = false;
 
 		if ( 0 === $quantity ) {
-			$success = WC()->cart->remove_cart_item( $cart_item_key );
+			$success = $this->cart->remove_cart_item( $cart_item_key );
 		} else {
-			$success = WC()->cart->set_quantity( $cart_item_key, $quantity );
+			$success = $this->cart->set_quantity( $cart_item_key, $quantity );
 		}
 
 		if ( $success ) {
 			header( 'HX-Trigger: cartUpdated' );
-			self::renderMiniCart();
+			$this->renderMiniCart();
 		} else {
 			status_header( 400 );
 			echo '<!-- Could not update cart -->';
@@ -92,11 +140,11 @@ class CartController
 	 * Remove cart item via HTMX DELETE.
 	 * Returns updated mini-cart fragment with HX-Trigger header.
 	 */
-	public static function removeItem(): void
+	public function removeItem(): void
 	{
 		header( 'Content-Type: text/html; charset=utf-8' );
 
-		$cart_item_key = isset( $_POST['cart_item_key'] ) ? sanitize_text_field( wp_unslash( $_POST['cart_item_key'] ) ) : '';
+		$cart_item_key = isset( Flight::request()->data['cart_item_key'] ) ? sanitize_text_field( wp_unslash( Flight::request()->data['cart_item_key'] ) ) : '';
 
 		if ( empty( $cart_item_key ) ) {
 			status_header( 400 );
@@ -104,11 +152,11 @@ class CartController
 			return;
 		}
 
-		$removed = WC()->cart->remove_cart_item( $cart_item_key );
+		$removed = $this->cart->remove_cart_item( $cart_item_key );
 
 		if ( $removed ) {
 			header( 'HX-Trigger: cartUpdated' );
-			self::renderMiniCart();
+			$this->renderMiniCart();
 		} else {
 			status_header( 400 );
 			echo '<!-- Could not remove cart item -->';

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * View template for cart error messages.
  *
@@ -9,6 +10,6 @@
 
 /** @var string $message */
 ?>
-<div class="cart-error p-4 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+<div class="cart-error p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded text-red-700 dark:text-red-300 text-sm">
     <p><?php echo esc_html( $message ); ?></p>
 </div>

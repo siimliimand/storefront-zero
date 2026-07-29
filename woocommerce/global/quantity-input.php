@@ -28,8 +28,8 @@ if ( $input_only ) {
     return;
 }
 ?>
-<div class="quantity flex items-center border rounded overflow-hidden">
-    <button type="button" class="qty-change bg-gray-100 hover:bg-gray-200 px-3 py-1 text-lg font-bold transition" data-action="minus" aria-label="<?php esc_attr_e( 'Decrease quantity', 'storefront-zero' ); ?>">&minus;</button>
-    <input type="number" class="form-input w-16 text-center border-x border-gray-200 py-1 <?php echo esc_attr( $input_class ); ?>" step="<?php echo esc_attr( $step ); ?>" min="<?php echo esc_attr( $min ); ?>" max="<?php echo esc_attr( $max > 0 ? $max : '' ); ?>" name="<?php echo esc_attr( $input_name ); ?>" value="<?php echo esc_attr( $input_value ); ?>" id="<?php echo esc_attr( $input_id ); ?>" inputmode="numeric" autocomplete="off" />
-    <button type="button" class="qty-change bg-gray-100 hover:bg-gray-200 px-3 py-1 text-lg font-bold transition" data-action="plus" aria-label="<?php esc_attr_e( 'Increase quantity', 'storefront-zero' ); ?>">+</button>
+<div class="quantity flex items-center border border-gray-300 dark:border-gray-600 rounded overflow-hidden">
+    <button type="button" class="qty-change bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-1 text-lg font-bold transition dark:text-gray-100" data-action="minus" aria-label="<?php esc_attr_e( 'Decrease quantity', 'storefront-zero' ); ?>">&minus;</button>
+    <input type="number" class="form-input w-16 text-center border-x border-gray-200 dark:border-gray-600 py-1 bg-white dark:bg-darkCard dark:text-gray-100 <?php echo esc_attr( $input_class ); ?>" step="<?php echo esc_attr( $step ); ?>" min="<?php echo esc_attr( $min ); ?>" max="<?php echo esc_attr( $max > 0 ? $max : '' ); ?>" name="<?php echo esc_attr( $input_name ); ?>" value="<?php echo esc_attr( $input_value ); ?>" id="<?php echo esc_attr( $input_id ); ?>" inputmode="numeric" autocomplete="off" />
+    <button type="button" class="qty-change bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-1 text-lg font-bold transition dark:text-gray-100" data-action="plus" aria-label="<?php esc_attr_e( 'Increase quantity', 'storefront-zero' ); ?>">+</button>
 </div>

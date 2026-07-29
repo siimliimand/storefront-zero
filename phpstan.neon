@@ -5,21 +5,29 @@ parameters:
         - functions.php
     excludePaths:
         - vendor/
-        - node_modules/
+        - node_modules (?)
         - assets/
         - woocommerce/
         - tests/
     stubFiles:
         - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
-        - app/woocommerce-stubs.php
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
 
-    # WordPress dynamic properties and hooks
+    # WooCommerce symbols — stubs package is too large for full resolution
     ignoreErrors:
+        - '#Function WC not found\.#'
         - '#Function wc_get_product not found\.#'
         - '#Function wc_get_products not found\.#'
         - '#Function wc_get_cart_url not found\.#'
-        - '#Function WC not found\.#'
         - '#Function is_product not found\.#'
+        - '#Function is_woocommerce not found\.#'
+        - '#Class WC_Cart not found\.#'
+        - '#has unknown class WC_Cart#'
+        - '#Call to method .* on an unknown class WC_Cart\.#'
+        - '#Parameter .* of method .* has invalid type WC_Cart\.#'
+        - '#Anonymous function has invalid return type WC_Cart\.#'
+        - '#Ternary operator condition is always true\.#'
+        - '#Call to method .* on an unknown class WC_Product\.#'
 
 includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon

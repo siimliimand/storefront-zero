@@ -12,6 +12,8 @@ get_header();
 
 <div id="primary" class="content-area">
 	<main id="main" class="site-main">
+		<?php do_action( 'woocommerce_before_main_content' ); ?>
+
 		<?php if ( have_posts() ) : ?>
 
 			<header class="woocommerce-products-header">
@@ -37,6 +39,8 @@ get_header();
 		<?php else : ?>
 			<p><?php esc_html_e( 'No products found matching your selection.', 'storefront-zero' ); ?></p>
 		<?php endif; ?>
+
+		<?php do_action( 'woocommerce_after_main_content' ); ?>
 	</main>
 </div>
 

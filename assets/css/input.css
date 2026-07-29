@@ -1,8 +1,59 @@
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/inter-latin.woff2') format('woff2');
+    font-display: swap;
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191,
+        U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .woocommerce button.button,
+    .woocommerce input.button,
+    .woocommerce #respond input#submit {
+        @apply inline-flex items-center justify-center;
+        all: unset;
+        @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200;
+    }
+
+    .woocommerce input,
+    .woocommerce select,
+    .woocommerce textarea {
+        @apply block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm;
+    }
+
+    .woocommerce table.shop_table {
+        @apply w-full border-collapse;
+    }
+    .woocommerce table.shop_table th,
+    .woocommerce table.shop_table td {
+        @apply p-3 text-left border-b border-gray-200;
+    }
+}
+
 @layer components {
+    /* HTMX indicator visibility — hides loading indicators by default,
+       shows them only while an HTMX request is in-flight on a parent. */
+    .htmx-indicator {
+        display: none;
+    }
+    .htmx-request .htmx-indicator,
+    .htmx-request.htmx-indicator {
+        display: inline-block;
+    }
+    .htmx-settling .htmx-indicator,
+    .htmx-settling.htmx-indicator {
+        display: inline-block;
+    }
+
     .btn-primary {
         @apply bg-brand-600 text-white px-4 py-2 rounded-lg font-medium
                hover:bg-brand-700 focus:ring-2 focus:ring-brand-500 focus:ring-offset-2
@@ -11,5 +62,43 @@
 
     .card {
         @apply bg-surface border border-gray-200 rounded-xl shadow-sm p-6;
+    }
+
+    .btn-secondary {
+        @apply bg-gray-100 text-gray-900 px-4 py-2 rounded-lg font-medium
+               hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2
+               transition-colors duration-200;
+    }
+
+    .btn-outline {
+        @apply bg-transparent border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium
+               hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2
+               transition-colors duration-200;
+    }
+
+    .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800;
+    }
+
+    .form-input {
+        @apply block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm
+               placeholder-gray-400 focus:border-brand-500 focus:ring-1 focus:ring-brand-500;
+    }
+
+    .form-select {
+        @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm
+               focus:border-brand-500 focus:ring-1 focus:ring-brand-500;
+    }
+
+    .alert-success {
+        @apply bg-green-50 border border-green-200 text-green-800 rounded-lg p-4;
+    }
+
+    .alert-error {
+        @apply bg-red-50 border border-red-200 text-red-800 rounded-lg p-4;
+    }
+
+    .alert-info {
+        @apply bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4;
     }
 }

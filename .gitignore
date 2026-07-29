@@ -8,11 +8,9 @@ dist/
 dist-ssr/
 release/
 
-# Lock files (regenerate with npm install / composer install)
-package-lock.json
+# Lock files — track for reproducible CI, excluded via .distignore for WP.org
 pnpm-lock.yaml
 yarn.lock
-composer.lock
 
 # Cache & Temporary Files
 .phpunit.cache
@@ -44,3 +42,5 @@ Thumbs.db
 *.sln
 *.sw?
 *~
+test-results/
+test-results.txt

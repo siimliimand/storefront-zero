@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace ThemeApp\Controllers;
 
+use Flight;
 use ThemeApp\View;
 
 /**
@@ -18,6 +19,23 @@ use ThemeApp\View;
  */
 class ProductController
 {
+    /**
+     * View instance for rendering templates.
+     *
+     * @var \ThemeApp\View
+     */
+    private View $view;
+
+    /**
+     * Constructor. Injected by the DI container.
+     *
+     * @param \ThemeApp\View $view View renderer.
+     */
+    public function __construct( View $view )
+    {
+        $this->view = $view;
+    }
+
     /**
      * Live product search via HTMX.
      *
@@ -28,37 +46,50 @@ class ProductController
      *
      * @return void
      */
-    public static function liveSearch(): void
+    public function liveSearch(): void
     {
         header( 'Content-Type: text/html; charset=utf-8' );
 
-        $query = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
+        $query = isset( Flight::request()->query['s'] ) ? sanitize_text_field( wp_unslash( Flight::request()->query['s'] ) ) : '';
 
         if ( empty( $query ) ) {
             echo '';
             return;
         }
 
-        $cache_key = 'sz_search_' . md5( $query );
+        $cache_key = 'sz_search_' . hash( 'xxh3', $query );
         $products  = get_transient( $cache_key );
 
         if ( false === $products ) {
-            $product_ids = wc_get_products( [
+            $query_result = new \WP_Query( [
+                's'              => $query,
                 'post_type'      => 'product',
                 'post_status'    => 'publish',
                 'posts_per_page' => 5,
-                's'              => $query,
-                'return'         => 'ids',
+                'search_columns' => [ 'post_title' ],
+                'fields'         => 'ids',
             ] );
+
+            $product_ids = $query_result->posts;
 
             set_transient( $cache_key, $product_ids, 60 );
             $products = $product_ids;
         }
 
-        // Hydrate product IDs into WC_Product objects.
-        $products = array_filter( array_map( static fn( int $id ): ?\WC_Product => wc_get_product( $id ), $products ) );
+        // Hydrate product IDs into WC_Product objects via a single batch query (avoids N+1).
+        // Short-circuit on empty array: wc_get_products(['include' => []]) returns ALL products.
+        if ( empty( $products ) ) {
+            $products = [];
+        } else {
+            $products = array_filter(
+                wc_get_products( [
+                    'include' => $products,
+                    'return'  => 'objects',
+                ] )
+            );
+        }
 
-        View::render( 'search-results', [
+        $this->view->render( 'search-results', [
             'products' => $products,
             'query'    => $query,
         ] );

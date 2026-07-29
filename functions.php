@@ -34,6 +34,16 @@ function storefront_zero_filemtime( string $path ): string {
 }
 
 /**
+ * Build a full URL for an HTMX API endpoint.
+ *
+ * @param string $path Optional sub-path, e.g. 'search' or 'cart/mini'.
+ * @return string Escaped absolute URL.
+ */
+function sz_endpoint( string $path = '' ): string {
+	return esc_url( home_url( '/htmx-api/' . ltrim( $path, '/' ) ) );
+}
+
+/**
  * Resolve a JS file path, preferring the minified build output when available.
  *
  * Checks for a compiled version under assets/js/dist/ (output of

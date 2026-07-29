@@ -43,7 +43,7 @@
                         name="s"
                         placeholder="Search products..."
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white dark:bg-darkCard text-gray-900 dark:text-gray-100"
-                        hx-get="/htmx-api/search"
+                        hx-get="<?php echo esc_attr( sz_endpoint( 'search' ) ); ?>"
                         hx-trigger="keyup changed delay:300ms, search"
                         hx-target="#search-results"
                         hx-indicator=".search-spinner"
@@ -70,7 +70,7 @@
 
                 <!-- Mini-cart with live HTMX sync -->
                 <div id="mini-cart-container"
-                     hx-get="/htmx-api/cart/mini"
+                     hx-get="<?php echo esc_attr( sz_endpoint( 'cart/mini' ) ); ?>"
                      hx-trigger="load, cartUpdated from:body"
                      hx-swap="outerHTML"
                      aria-live="polite"

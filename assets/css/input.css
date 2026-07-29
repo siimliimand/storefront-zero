@@ -101,4 +101,19 @@
     .alert-info {
         @apply bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4;
     }
+
+    /* Loading skeletons — shown while HTMX is fetching content. */
+    .skeleton-mini-cart,
+    .skeleton-search-results {
+        display: none;
+    }
+
+    /* Override the default inline-block from .htmx-indicator
+       so that flex-based skeleton containers render correctly. */
+    .htmx-request .skeleton-mini-cart {
+        display: flex;
+    }
+    .htmx-request .skeleton-search-results {
+        display: flex;
+    }
 }

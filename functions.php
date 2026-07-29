@@ -34,6 +34,16 @@ function storefront_zero_filemtime( string $path ): string {
 }
 
 /**
+ * Build a full URL for an HTMX API endpoint.
+ *
+ * @param string $path Optional sub-path, e.g. 'search' or 'cart/mini'.
+ * @return string Escaped absolute URL.
+ */
+function sz_endpoint( string $path = '' ): string {
+	return esc_url( home_url( '/htmx-api/' . ltrim( $path, '/' ) ) );
+}
+
+/**
  * Resolve a JS file path, preferring the minified build output when available.
  *
  * Checks for a compiled version under assets/js/dist/ (output of
@@ -282,6 +292,15 @@ function storefront_zero_flight_init(): void {
 
 	require_once __DIR__ . '/app/routes.php';
 
+	// Persist WooCommerce session after Flight handles the request.
+	Flight::after( 'start', function () {
+		try {
+			WC()->session->save_data();
+		} catch ( \Throwable $e ) {
+			// Session errors must not break the request.
+		}
+	} );
+
 	Flight::start();
 	exit;
 }
@@ -340,3 +359,18 @@ function storefront_zero_lazy_product_images( array $attr, \WP_Post $attachment,
 	return $attr;
 }
 add_filter( 'wp_get_attachment_image_attributes', 'storefront_zero_lazy_product_images', 10, 3 );
+
+/**
+ * Purge cached search transients when products change.
+ *
+ * Deletes the sz_search_hash transient to ensure search results
+ * reflect the latest product data.
+ *
+ * @return void
+ */
+function storefront_zero_purge_search_transients(): void {
+	delete_transient( 'sz_search_hash' );
+}
+add_action( 'save_post_product', 'storefront_zero_purge_search_transients' );
+add_action( 'woocommerce_update_product', 'storefront_zero_purge_search_transients' );
+add_action( 'delete_post', 'storefront_zero_purge_search_transients' );

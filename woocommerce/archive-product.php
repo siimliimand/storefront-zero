@@ -26,15 +26,22 @@ get_header();
 				<?php endif; ?>
 			</header>
 
-			<?php woocommerce_product_loop_start(); ?>
+		<div id="product-grid"
+			 class="products"
+			 hx-swap="innerHTML"
+			 hx-target="this">
 
-				<?php while ( have_posts() ) : the_post(); ?>
-					<?php wc_get_template_part( 'content', 'product' ); ?>
-				<?php endwhile; ?>
+		<?php woocommerce_product_loop_start(); ?>
 
-			<?php woocommerce_product_loop_end(); ?>
+			<?php while ( have_posts() ) : the_post(); ?>
+				<?php wc_get_template_part( 'content', 'product' ); ?>
+			<?php endwhile; ?>
 
-			<?php woocommerce_pagination(); ?>
+		<?php woocommerce_product_loop_end(); ?>
+
+		</div>
+
+		<?php woocommerce_pagination(); ?>
 
 		<?php else : ?>
 			<p><?php esc_html_e( 'No products found matching your selection.', 'storefront-zero' ); ?></p>

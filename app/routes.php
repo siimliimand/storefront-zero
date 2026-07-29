@@ -43,6 +43,11 @@ Flight::route( 'GET /htmx-api/search', function () use ( $container ) {
 	$container->get( ProductController::class )->liveSearch();
 } );
 
+// GET /htmx-api/products/filter — Faceted product filter.
+Flight::route( 'GET /htmx-api/products/filter', function () use ( $container ) {
+	$container->get( ProductController::class )->filterProducts();
+} );
+
 // POST /htmx-api/cart/add — Add product to cart.
 Flight::route( 'POST /htmx-api/cart/add', function () use ( $container ) {
 	$container->get( CartController::class )->addToCart();

@@ -94,4 +94,204 @@ class ProductController
             'query'    => $query,
         ] );
     }
+
+    /**
+     * Faceted product filter via HTMX.
+     *
+     * Accepts query parameters (category, attribute, min_price, max_price,
+     * orderby, order), sanitises them, builds a WP_Query via pre_get_posts,
+     * and renders the product-grid HTML fragment.
+     *
+     * @return void
+     */
+    public function filterProducts(): void
+    {
+        header( 'Content-Type: text/html; charset=utf-8' );
+
+        ob_start();
+
+        $request = Flight::request();
+
+        // Sanitise all inputs.
+        $category = isset( $request->query['category'] )
+            ? sanitize_text_field( wp_unslash( $request->query['category'] ) )
+            : '';
+
+        $min_price = isset( $request->query['min_price'] )
+            ? absint( $request->query['min_price'] )
+            : 0;
+
+        $max_price = isset( $request->query['max_price'] )
+            ? absint( $request->query['max_price'] )
+            : 0;
+
+        $orderby = isset( $request->query['orderby'] )
+            ? sanitize_text_field( wp_unslash( $request->query['orderby'] ) )
+            : 'date';
+
+        $order = isset( $request->query['order'] )
+            ? strtoupper( sanitize_text_field( wp_unslash( $request->query['order'] ) ) )
+            : 'DESC';
+
+        // Whitelist sort options.
+        $allowed_orderby = [ 'date', 'price', 'title', 'popularity', 'rating', 'relevance' ];
+        if ( ! in_array( $orderby, $allowed_orderby, true ) ) {
+            $orderby = 'date';
+        }
+
+        $allowed_order = [ 'ASC', 'DESC' ];
+        if ( ! in_array( $order, $allowed_order, true ) ) {
+            $order = 'DESC';
+        }
+
+        // Collect attribute filters (filter_color, filter_size, etc.).
+        $attributes = [];
+        foreach ( $request->query as $key => $value ) {
+            if ( 0 === strpos( $key, 'filter_' ) && ! empty( $value ) ) {
+                $attribute_key   = sanitize_text_field( wp_unslash( $key ) );
+                $attribute_value = sanitize_text_field( wp_unslash( $value ) );
+                $attributes[ $attribute_key ] = $attribute_value;
+            }
+        }
+
+        // Build query arguments.
+        $query_args = [
+            'post_type'      => 'product',
+            'post_status'    => 'publish',
+            'posts_per_page' => absint( get_option( 'posts_per_page', 12 ) ),
+            'orderby'        => $orderby,
+            'order'          => $order,
+        ];
+
+        // Map WooCommerce orderby values to WP_Query equivalents.
+        if ( 'price' === $orderby ) {
+            $query_args['meta_key'] = '_price';
+            $query_args['orderby']  = 'meta_value_num';
+        } elseif ( 'popularity' === $orderby ) {
+            $query_args['meta_key'] = 'total_sales';
+            $query_args['orderby']  = 'meta_value_num';
+        } elseif ( 'rating' === $orderby ) {
+            $query_args['meta_key'] = '_wc_average_rating';
+            $query_args['orderby']  = 'meta_value_num';
+        } elseif ( 'relevance' === $orderby ) {
+            $query_args['orderby'] = 'relevance';
+        }
+
+        // Category filter.
+        if ( ! empty( $category ) ) {
+            $query_args['tax_query'] = [
+                [
+                    'taxonomy' => 'product_cat',
+                    'field'    => 'slug',
+                    'terms'    => $category,
+                ],
+            ];
+        }
+
+        // Attribute filters.
+        if ( ! empty( $attributes ) ) {
+            $attribute_tax_query = [];
+            foreach ( $attributes as $attr_key => $attr_value ) {
+                $attribute_tax_query[] = [
+                    'taxonomy' => $attr_key,
+                    'field'    => 'slug',
+                    'terms'    => $attr_value,
+                ];
+            }
+
+            if ( isset( $query_args['tax_query'] ) ) {
+                $query_args['tax_query']['relation'] = 'AND';
+                $query_args['tax_query']             = array_merge(
+                    $query_args['tax_query'],
+                    $attribute_tax_query
+                );
+            } else {
+                $query_args['tax_query'] = $attribute_tax_query;
+            }
+        }
+
+        // Price range filter.
+        if ( $min_price > 0 || $max_price > 0 ) {
+            $price_meta_query = [ 'relation' => 'AND' ];
+
+            if ( $min_price > 0 ) {
+                $price_meta_query[] = [
+                    'key'     => '_price',
+                    'value'   => $min_price,
+                    'compare' => '>=',
+                    'type'    => 'NUMERIC',
+                ];
+            }
+
+            if ( $max_price > 0 ) {
+                $price_meta_query[] = [
+                    'key'     => '_price',
+                    'value'   => $max_price,
+                    'compare' => '<=',
+                    'type'    => 'NUMERIC',
+                ];
+            }
+
+            $query_args['meta_query'] = $price_meta_query;
+        }
+
+        // Apply filters via pre_get_posts, scoped to this query instance.
+        $filter_args = $query_args;
+
+        add_action( 'pre_get_posts', function ( \WP_Query $wp_query ) use ( $filter_args ): void {
+            // Only modify our secondary query — skip the main query.
+            if ( $wp_query->is_main_query() ) {
+                return;
+            }
+
+            foreach ( $filter_args as $key => $value ) {
+                $wp_query->set( $key, $value );
+            }
+        } );
+
+        // Query args are applied via the pre_get_posts callback above.
+        $product_query = new \WP_Query( [
+            'post_type'   => 'product',
+            'post_status' => 'publish',
+        ] );
+
+        // Render the product grid.
+        $this->view->render( 'product-grid', [
+            'products' => $product_query->posts,
+            'query'    => $product_query,
+        ] );
+
+        echo $this->flush_wc_notices();
+    }
+
+    /**
+     * Capture WooCommerce notices and set HX-Trigger header for toast display.
+     *
+     * Reads all WC notices, clears them to prevent double-display, and returns
+     * the first notice as an HX-Trigger JSON header. If no notices exist,
+     * returns an empty string.
+     *
+     * @return string HTML-safe empty string (header is set as side effect).
+     */
+    private function flush_wc_notices(): string
+    {
+        $notices = wc_get_notices();
+        wc_clear_notices();
+
+        if ( ! empty( $notices ) ) {
+            $notice = reset( $notices );
+            $type   = $notice['type'] ?? 'notice';
+
+            header(
+                'HX-Trigger: ' . wp_json_encode( [
+                    'showToast' => [
+                        'message' => $notice['notice'] ?? '',
+                        'type'    => $type,
+                    ],
+                ] )
+            );
+        }
+
+        return '';
+    }
 }

@@ -22,3 +22,20 @@ function load_route_definitions(): string
 
     return $source;
 }
+
+/**
+ * Run a callable and clean up any output buffers it opens.
+ *
+ * Controller methods (addToCart, updateQuantity, removeItem, filterProducts)
+ * call ob_start() without ob_end_clean(). This helper wraps the call so
+ * output buffers are properly restored after each test.
+ */
+function withCleanBuffer(callable $fn): void
+{
+    $level = ob_get_level();
+    ob_start();
+    $fn();
+    while (ob_get_level() > $level) {
+        ob_end_clean();
+    }
+}

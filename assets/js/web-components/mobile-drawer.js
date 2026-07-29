@@ -29,8 +29,10 @@ class MobileDrawer extends HTMLElement {
 
             this._handleToggle = this._handleToggle.bind(this);
             this._handleKeyDown = this._handleKeyDown.bind(this);
+            this._handleFocusTrap = this._handleFocusTrap.bind(this);
             this._toggle.addEventListener('click', this._handleToggle);
             document.addEventListener('keydown', this._handleKeyDown);
+            document.addEventListener('keydown', this._handleFocusTrap);
         }
     }
 
@@ -41,6 +43,9 @@ class MobileDrawer extends HTMLElement {
             }
             if (this._handleKeyDown) {
                 document.removeEventListener('keydown', this._handleKeyDown);
+            }
+            if (this._handleFocusTrap) {
+                document.removeEventListener('keydown', this._handleFocusTrap);
             }
         }
     }
@@ -62,6 +67,30 @@ class MobileDrawer extends HTMLElement {
             this._menu.classList.add('hidden');
             this._toggle.setAttribute('aria-expanded', 'false');
             this._toggle.focus();
+        }
+    }
+
+    _handleFocusTrap(evt) {
+        if (!this._isOpen || evt.key !== 'Tab') return;
+
+        const focusableSelector =
+            'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+        const focusable = Array.from(this._menu.querySelectorAll(focusableSelector));
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (evt.shiftKey) {
+            if (document.activeElement === first) {
+                evt.preventDefault();
+                last.focus();
+            }
+        } else {
+            if (document.activeElement === last) {
+                evt.preventDefault();
+                first.focus();
+            }
         }
     }
 }

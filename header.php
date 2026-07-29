@@ -12,6 +12,17 @@
     <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preload" href="<?php echo esc_url( get_template_directory_uri() . '/assets/fonts/inter-latin.woff2' ); ?>" as="font" type="font/woff2" crossorigin>
+    <script>
+    (function() {
+        var preference = localStorage.getItem('sz-dark-mode');
+        var shouldBeDark = preference === 'dark' || (preference === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (shouldBeDark) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    })();
+    </script>
     <?php wp_head(); ?>
 </head>
 
@@ -43,12 +54,17 @@
                         name="s"
                         placeholder="Search products..."
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white dark:bg-darkCard text-gray-900 dark:text-gray-100"
-                        hx-get="/htmx-api/search"
+                        hx-get="<?php echo esc_attr( sz_endpoint( 'search' ) ); ?>"
                         hx-trigger="keyup changed delay:300ms, search"
                         hx-target="#search-results"
                         hx-indicator=".search-spinner"
                         autocomplete="off"
                         aria-label="<?php esc_attr_e( 'Search products', 'storefront-zero' ); ?>"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-expanded="false"
+                        aria-controls="search-results"
+                        aria-activedescendant=""
                     />
                     <span class="search-spinner htmx-indicator absolute right-3 top-1/2 -translate-y-1/2" role="status" aria-label="<?php esc_attr_e( 'Searching...', 'storefront-zero' ); ?>">
                         <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -58,7 +74,13 @@
                     </span>
                     
                     <!-- Search results dropdown -->
-                    <div id="search-results" class="absolute z-50 w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg mt-1 hidden" aria-live="polite">
+                    <div id="search-results" role="listbox" class="absolute z-50 w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg mt-1 hidden" aria-live="polite">
+                        <!-- Search results loading skeleton -->
+                        <div class="skeleton-search-results htmx-indicator animate-pulse p-2 space-y-2">
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -70,11 +92,16 @@
 
                 <!-- Mini-cart with live HTMX sync -->
                 <div id="mini-cart-container"
-                     hx-get="/htmx-api/cart/mini"
+                     hx-get="<?php echo esc_attr( sz_endpoint( 'cart/mini' ) ); ?>"
                      hx-trigger="load, cartUpdated from:body"
                      hx-swap="outerHTML"
                      aria-live="polite"
                      class="relative">
+                    <!-- Mini-cart loading skeleton -->
+                    <div class="skeleton-mini-cart htmx-indicator animate-pulse flex items-center space-x-2">
+                        <div class="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        <div class="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                    </div>
                 </div>
 
                 <mobile-drawer>

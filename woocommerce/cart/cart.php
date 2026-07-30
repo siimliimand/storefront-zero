@@ -56,8 +56,8 @@ do_action( 'woocommerce_before_cart_table' );
 				. 'hx-trigger="change" '
 				. 'hx-vals=\'{"cart_item_key": "%s"}\' '
 				. 'hx-target="#cart-content" '
-				. 'hx-swap="innerHTML">',
-				$cart_item['quantity'],
+				. 'hx-swap="outerHTML">',
+			$cart_item['quantity'],
 				$_product->get_max_purchase_quantity(),
 				sprintf( esc_attr__( 'Quantity for %s', 'storefront-zero' ), wp_strip_all_tags( $product_name ) ),
 				esc_url( home_url( '/htmx-api/cart/update-qty' ) ),
@@ -74,7 +74,7 @@ do_action( 'woocommerce_before_cart_table' );
 						. 'hx-delete="%s" '
 						. 'hx-vals=\'{"cart_item_key": "%s"}\' '
 						. 'hx-target="#cart-content" '
-						. 'hx-swap="innerHTML" '
+						. 'hx-swap="outerHTML" '
 						. 'hx-confirm="%s">'
 						. '&times;</button>',
 						esc_html__( 'Remove this item', 'storefront-zero' ),

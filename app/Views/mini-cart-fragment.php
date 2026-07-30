@@ -4,7 +4,7 @@ declare(strict_types=1);
  * Mini-cart HTML fragment for HTMX swap.
  *
  * Rendered by CartController::renderMiniCart() and swapped into
- * #mini-cart-container via hx-get="/htmx-api/cart/mini".
+ * #mini-cart-container via hx-get on sz_endpoint( 'cart/mini' ).
  *
  * @package Storefront_Zero
  *
@@ -17,7 +17,7 @@ $cart_total  = WC()->cart->get_cart_subtotal();
 $added_product = $added_product ?? '';
 ?>
 <div id="mini-cart-container"
-     hx-get="/htmx-api/cart/mini"
+     hx-get="<?php echo esc_attr( sz_endpoint( 'cart/mini' ) ); ?>"
      hx-trigger="cartUpdated from:body"
      hx-swap="outerHTML"
      aria-live="polite"

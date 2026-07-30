@@ -19,13 +19,13 @@ get_header();
 	<main id="main" class="site-main">
 		<section class="not-found py-16 text-center">
 			<header class="page-header mb-6">
-				<h1 class="page-title text-3xl font-bold text-gray-900">
+				<h1 class="page-title text-3xl font-bold text-gray-900 dark:text-gray-100">
 					<?php esc_html_e( 'Page not found', 'storefront-zero' ); ?>
 				</h1>
 			</header>
 
 			<div class="page-content max-w-xl mx-auto mb-10">
-				<p class="text-gray-600 mb-4">
+				<p class="text-gray-600 dark:text-gray-300 mb-4">
 					<?php esc_html_e( 'The page you were looking for doesn\'t exist. It may have been moved or removed.', 'storefront-zero' ); ?>
 				</p>
 
@@ -35,8 +35,8 @@ get_header();
 						type="search"
 						name="s"
 						placeholder="<?php esc_attr_e( 'Search products...', 'storefront-zero' ); ?>"
-						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-						hx-get="/htmx-api/search"
+						class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-darkCard dark:text-gray-100"
+						hx-get="<?php echo esc_attr( sz_endpoint( 'search' ) ); ?>"
 						hx-trigger="keyup changed delay:300ms, search"
 						hx-target="#search-results-404"
 						hx-indicator=".search-spinner-404"
@@ -50,7 +50,7 @@ get_header();
 						</svg>
 					</span>
 
-					<div id="search-results-404" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden" aria-live="polite">
+					<div id="search-results-404" class="absolute z-50 w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg mt-1 hidden" aria-live="polite">
 					</div>
 				</div>
 
@@ -76,7 +76,7 @@ get_header();
 					?>
 						<a
 							href="<?php echo esc_url( get_permalink() ); ?>"
-							class="inline-flex items-center px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
+							class="inline-flex items-center px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
 						>
 							<?php esc_html_e( 'Read latest post', 'storefront-zero' ); ?>
 						</a>

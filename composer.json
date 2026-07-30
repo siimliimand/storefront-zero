@@ -22,11 +22,7 @@
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
-        },
-        "files": [
-            "tests/helpers-wp-stubs.php",
-            "tests/helpers.php"
-        ]
+        }
     },
     "config": {
         "allow-plugins": {

@@ -30,6 +30,12 @@ parameters:
         - '#Parameter .* of method .* has invalid type WC_Cart\.#'
         - '#Anonymous function has invalid return type WC_Cart\.#'
         - '#Call to method .* on an unknown class WC_Product\.#'
+        - '#Function woocommerce_product_loop_start not found\.#'
+        - '#Function woocommerce_product_loop_end not found\.#'
+        - '#Function wc_get_template_part not found\.#'
+        - '#Function is_account_page not found\.#'
+        - '#Function is_cart not found\.#'
+        - '#Function is_checkout not found\.#'
 
 includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon

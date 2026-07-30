@@ -54,6 +54,7 @@ class CartController
 
 		ob_start();
 
+		// @phpstan-ignore-next-line ternary.alwaysTrue
 		$data = Flight::request()->data ?: [];
 
 		$product_id  = isset( $data['product_id'] ) ? absint( $data['product_id'] ) : 0;

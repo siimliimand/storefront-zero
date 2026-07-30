@@ -14,6 +14,10 @@ if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
 	require_once __DIR__ . '/vendor/autoload.php';
 }
 
+// Admin Settings Page.
+require_once __DIR__ . '/inc/admin-settings.php';
+
+
 /**
  * Theme version for cache busting.
  */
@@ -209,24 +213,78 @@ function storefront_zero_disable_emoji(): void {
 add_action( 'init', 'storefront_zero_disable_emoji' );
 
 /**
- * Dequeue unused WooCommerce scripts and styles on non-product pages.
+ * Dequeue WooCommerce scripts and styles that the theme replaces with HTMX or doesn't need.
  *
- * Removes select2, zoom, and prettyPhoto on pages that don't need them.
+ * Configured via Theme Settings (Appearance > Theme Settings).
  *
  * @return void
  */
 function storefront_zero_dequeue_unused_wc_assets(): void {
-	if ( is_product() ) {
+	// Order attribution script scope setting.
+	$attribution_scope = get_option( 'sz_attribution_global_loading', 'checkout_only' );
+	if ( 'checkout_only' === $attribution_scope && ! is_checkout() ) {
+		wp_dequeue_script( 'sourcebuster-js' );
+		wp_dequeue_script( 'wc-order-attribution' );
+	}
+
+	// CSS Optimization setting.
+	$optimize_css = get_option( 'sz_optimize_wc_css', '1' );
+	if ( '1' === $optimize_css ) {
+		// Dequeue WooCommerce core CSS on non-store pages.
+		if ( ! is_woocommerce() && ! is_cart() && ! is_checkout() && ! is_account_page() && ! is_product() ) {
+			wp_dequeue_style( 'woocommerce-layout' );
+			wp_dequeue_style( 'woocommerce-smallscreen' );
+			wp_dequeue_style( 'woocommerce-general' );
+			wp_dequeue_style( 'woocommerce-inline' );
+			wp_dequeue_style( 'wc-blocks-style' );
+			wp_dequeue_style( 'wc-blocks-vendors-style' );
+			wp_dequeue_style( 'wc-blocks-packages-style' );
+		}
+	}
+
+	// Cart, checkout, and my-account pages NEED jQuery for WooCommerce core scripts.
+	if ( is_cart() || is_checkout() || is_account_page() ) {
+		if ( ! is_product() ) {
+			wp_dequeue_script( 'wc-add-to-cart-variation' );
+			wp_dequeue_script( 'wc-single-product' );
+			wp_dequeue_script( 'zoom' );
+			wp_dequeue_script( 'select2' );
+			wp_dequeue_style( 'select2' );
+			wp_dequeue_script( 'prettyPhoto' );
+			wp_dequeue_style( 'prettyPhoto' );
+		}
 		return;
 	}
 
-	wp_dequeue_script( 'wc-add-to-cart-variation' );
-	wp_dequeue_script( 'wc-single-product' );
-	wp_dequeue_script( 'zoom' );
-	wp_dequeue_script( 'select2' );
-	wp_dequeue_style( 'select2' );
-	wp_dequeue_script( 'prettyPhoto' );
-	wp_dequeue_style( 'prettyPhoto' );
+	// ── Non-cart/checkout pages (shop, product, archive, front page, standard pages) ──
+
+	// Dequeue WC's AJAX add-to-cart — theme uses HTMX hx-post="/htmx-api/cart/add".
+	wp_dequeue_script( 'wc-add-to-cart' );
+
+	// Dequeue WooCommerce core frontend JS (cart fragments, overlay blocking, cookies).
+	wp_dequeue_script( 'woocommerce' );
+	wp_dequeue_script( 'wc-cart-fragments' );
+
+	// Dequeue jQuery UI & blockUI dependencies.
+	wp_dequeue_script( 'wc-jquery-blockui' );
+	wp_dequeue_script( 'jquery-blockui' );
+	wp_dequeue_script( 'wc-js-cookie' );
+	wp_dequeue_script( 'js-cookie' );
+
+	// Dequeue jQuery itself on non-cart/checkout pages.
+	wp_dequeue_script( 'jquery' );
+	wp_dequeue_script( 'jquery-core' );
+	wp_dequeue_script( 'jquery-migrate' );
+
+	if ( ! is_product() ) {
+		wp_dequeue_script( 'wc-add-to-cart-variation' );
+		wp_dequeue_script( 'wc-single-product' );
+		wp_dequeue_script( 'zoom' );
+		wp_dequeue_script( 'select2' );
+		wp_dequeue_style( 'select2' );
+		wp_dequeue_script( 'prettyPhoto' );
+		wp_dequeue_style( 'prettyPhoto' );
+	}
 }
 add_action( 'wp_enqueue_scripts', 'storefront_zero_dequeue_unused_wc_assets', 99 );
 

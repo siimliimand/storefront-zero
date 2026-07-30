@@ -114,22 +114,34 @@ function storefront_zero_enqueue_assets(): void {
 	);
 
 	// Quantity stepper - +/- buttons for WooCommerce quantity inputs.
-	[ $qty_path, $qty_uri ] = storefront_zero_resolve_js( 'assets/js/qty-stepper.js' );
+	// Product variation form — both only needed on single product pages.
+	if ( is_product() ) {
+		[ $qty_path, $qty_uri ] = storefront_zero_resolve_js( 'assets/js/qty-stepper.js' );
 
-	wp_enqueue_script(
-		'storefront-zero-qty-stepper',
-		$qty_uri,
-		[ 'htmx' ],
-		storefront_zero_filemtime( $qty_path ),
-		true
-	);
+		wp_enqueue_script(
+			'storefront-zero-qty-stepper',
+			$qty_uri,
+			[ 'htmx' ],
+			storefront_zero_filemtime( $qty_path ),
+			true
+		);
+
+		[ $pvf_path, $pvf_uri ] = storefront_zero_resolve_js( 'assets/js/web-components/product-variation-form.js' );
+
+		wp_enqueue_script(
+			'sz-wc-product-variation-form',
+			$pvf_uri,
+			[ 'htmx' ],
+			storefront_zero_filemtime( $pvf_path ),
+			true
+		);
+	}
 
 	// Web Components — explicit registration (no glob I/O on every page load).
 	$web_components = [
 		'mobile-drawer',
 		'toast-notification',
 		'dark-mode-toggle',
-		'product-variation-form',
 	];
 
 	foreach ( $web_components as $wc_name ) {

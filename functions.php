@@ -354,10 +354,12 @@ function storefront_zero_defer_htmx( string $tag, string $handle ): string {
 add_filter( 'script_loader_tag', 'storefront_zero_defer_htmx', 20, 2 );
 
 /**
- * Add loading="lazy" to WooCommerce product images on shop and archive pages.
+ * Lazy-load WooCommerce product images, skipping above-the-fold hero images.
  *
- * Filters wp_get_attachment_image_attributes only on WooCommerce product pages
- * to avoid affecting above-the-fold images site-wide.
+ * - Single product pages: the main thumbnail gets fetchpriority="high" and no
+ *   lazy load (it is the LCP element).
+ * - Front page: the hero product thumbnail gets the same treatment.
+ * - All other WooCommerce images (shop, archives, galleries) are lazy-loaded.
  *
  * @param array<string, string> $attr       Image attributes.
  * @param \WP_Post              $attachment Attachment post object.
@@ -365,9 +367,29 @@ add_filter( 'script_loader_tag', 'storefront_zero_defer_htmx', 20, 2 );
  * @return array<string, string> Modified attributes.
  */
 function storefront_zero_lazy_product_images( array $attr, \WP_Post $attachment, $size ): array {
+	// Skip lazy loading for the main product image on single product pages.
+	if ( is_product() && has_post_thumbnail() ) {
+		$thumbnail_id = get_post_thumbnail_id();
+		if ( (string) $attachment->ID === (string) $thumbnail_id ) {
+			$attr['fetchpriority'] = 'high';
+			return $attr;
+		}
+	}
+
+	// Skip lazy loading for the hero image on the front page.
+	if ( is_front_page() && has_post_thumbnail() ) {
+		$thumbnail_id = get_post_thumbnail_id();
+		if ( (string) $attachment->ID === (string) $thumbnail_id ) {
+			$attr['fetchpriority'] = 'high';
+			return $attr;
+		}
+	}
+
+	// Lazy load all other WooCommerce product images.
 	if ( is_woocommerce() ) {
 		$attr['loading'] = 'lazy';
 	}
+
 	return $attr;
 }
 add_filter( 'wp_get_attachment_image_attributes', 'storefront_zero_lazy_product_images', 10, 3 );
@@ -381,7 +403,8 @@ add_filter( 'wp_get_attachment_image_attributes', 'storefront_zero_lazy_product_
  * @return void
  */
 function storefront_zero_purge_search_transients(): void {
-	delete_transient( 'sz_search_hash' );
+	$generation = (int) get_option( 'sz_search_generation', 0 );
+	update_option( 'sz_search_generation', $generation + 1 );
 }
 add_action( 'save_post_product', 'storefront_zero_purge_search_transients' );
 add_action( 'woocommerce_update_product', 'storefront_zero_purge_search_transients' );

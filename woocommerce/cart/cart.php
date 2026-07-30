@@ -13,7 +13,6 @@ do_action( 'woocommerce_before_cart_table' );
 ?>
 
 <form id="cart-content" class="woocommerce-cart-form" action="<?php echo esc_url( wc_get_cart_url() ); ?>" method="post">
-    <?php do_action( 'woocommerce_before_cart_table' ); ?>
 
     <table class="shop_table shop_table_responsive cart woocommerce-cart-form__contents min-w-full" cellspacing="0">
         <thead>

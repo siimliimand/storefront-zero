@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 status_header( 404 );
 nocache_headers();
+
+get_header();
 ?>
 
 <div id="primary" class="content-area">

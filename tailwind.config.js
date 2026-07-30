@@ -9,6 +9,8 @@ module.exports = {
     './index.php',
     './assets/js/**/*.js',
     './template-parts/**/*.php',
+    './templates/**/*.php',
+    '././*.php',
     './sidebar.php',
   ],
   theme: {

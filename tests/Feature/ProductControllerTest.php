@@ -3,21 +3,15 @@
 declare(strict_types=1);
 
 use ThemeApp\Controllers\ProductController;
-
-// View lives at app/View.php — PSR-4 maps ThemeApp\ to app/.
-// The namespace-file mismatch means Composer can't autoload it — require manually.
-require_once __DIR__ . '/../../app/View.php';
-
-use ThemeApp\View;
+use ThemeApp\ViewInterface;
 
 /**
  * View test double that records render calls.
  *
- * Extends View to satisfy the ProductController constructor type-hint.
- * Overrides the render method to capture calls instead of
- * including template files.
+ * Implements ViewInterface to satisfy the ProductController constructor type-hint.
+ * Records render calls instead of including template files.
  */
-class FakeProductView extends View
+class FakeProductView implements ViewInterface
 {
     /** @var list<array{view: string, data: array<string, mixed>}> */
     public static array $calls = [];
@@ -398,6 +392,7 @@ it('allows valid orderby values like popularity', function () {
 
 it('collects filter_color attribute into tax_query', function () {
     WP_Query::setPosts([]);
+    TaxonomyStore::register('color');
 
     $view       = new FakeProductView();
     $controller = new ProductController($view);
@@ -408,7 +403,7 @@ it('collects filter_color attribute into tax_query', function () {
     $args = WP_Query::getLastArgs();
     expect($args)->toHaveKey('tax_query');
     expect($args['tax_query'])->toContainEqual([
-        'taxonomy' => 'filter_color',
+        'taxonomy' => 'color',
         'field'    => 'slug',
         'terms'    => 'red',
     ]);
@@ -416,6 +411,7 @@ it('collects filter_color attribute into tax_query', function () {
 
 it('combines category and attribute filters with AND relation', function () {
     WP_Query::setPosts([]);
+    TaxonomyStore::register('color');
 
     $view       = new FakeProductView();
     $controller = new ProductController($view);

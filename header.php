@@ -52,7 +52,7 @@
                     <input 
                         type="search"
                         name="s"
-                        placeholder="Search products..."
+                        placeholder="<?php esc_attr_e( 'Search products...', 'storefront-zero' ); ?>"
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white dark:bg-darkCard text-gray-900 dark:text-gray-100"
                         hx-get="<?php echo esc_attr( sz_endpoint( 'search' ) ); ?>"
                         hx-trigger="keyup changed delay:300ms, search"

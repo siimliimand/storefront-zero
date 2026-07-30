@@ -204,9 +204,9 @@ class ProductVariationForm extends HTMLElement {
 
         this._addToCartBtn.setAttribute('hx-post', endpoint + '/cart/add');
         this._addToCartBtn.setAttribute('hx-vals', JSON.stringify(hxValues));
-        this._addToCartBtn.setAttribute('hx-target', '#mini-cart');
+        this._addToCartBtn.setAttribute('hx-target', '#mini-cart-container');
         this._addToCartBtn.setAttribute('hx-swap', 'innerHTML');
-        this._addToCartBtn.setAttribute('hx-indicator', '#mini-cart');
+        this._addToCartBtn.setAttribute('hx-indicator', '#mini-cart-container');
     }
 }
 

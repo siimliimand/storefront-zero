@@ -14,6 +14,10 @@ if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
 	require_once __DIR__ . '/vendor/autoload.php';
 }
 
+// Admin Settings Page.
+require_once __DIR__ . '/inc/admin-settings.php';
+
+
 /**
  * Theme version for cache busting.
  */
@@ -114,22 +118,34 @@ function storefront_zero_enqueue_assets(): void {
 	);
 
 	// Quantity stepper - +/- buttons for WooCommerce quantity inputs.
-	[ $qty_path, $qty_uri ] = storefront_zero_resolve_js( 'assets/js/qty-stepper.js' );
+	// Product variation form — both only needed on single product pages.
+	if ( is_product() ) {
+		[ $qty_path, $qty_uri ] = storefront_zero_resolve_js( 'assets/js/qty-stepper.js' );
 
-	wp_enqueue_script(
-		'storefront-zero-qty-stepper',
-		$qty_uri,
-		[ 'htmx' ],
-		storefront_zero_filemtime( $qty_path ),
-		true
-	);
+		wp_enqueue_script(
+			'storefront-zero-qty-stepper',
+			$qty_uri,
+			[ 'htmx' ],
+			storefront_zero_filemtime( $qty_path ),
+			true
+		);
+
+		[ $pvf_path, $pvf_uri ] = storefront_zero_resolve_js( 'assets/js/web-components/product-variation-form.js' );
+
+		wp_enqueue_script(
+			'sz-wc-product-variation-form',
+			$pvf_uri,
+			[ 'htmx' ],
+			storefront_zero_filemtime( $pvf_path ),
+			true
+		);
+	}
 
 	// Web Components — explicit registration (no glob I/O on every page load).
 	$web_components = [
 		'mobile-drawer',
 		'toast-notification',
 		'dark-mode-toggle',
-		'product-variation-form',
 	];
 
 	foreach ( $web_components as $wc_name ) {
@@ -197,24 +213,78 @@ function storefront_zero_disable_emoji(): void {
 add_action( 'init', 'storefront_zero_disable_emoji' );
 
 /**
- * Dequeue unused WooCommerce scripts and styles on non-product pages.
+ * Dequeue WooCommerce scripts and styles that the theme replaces with HTMX or doesn't need.
  *
- * Removes select2, zoom, and prettyPhoto on pages that don't need them.
+ * Configured via Theme Settings (Appearance > Theme Settings).
  *
  * @return void
  */
 function storefront_zero_dequeue_unused_wc_assets(): void {
-	if ( is_product() ) {
+	// Order attribution script scope setting.
+	$attribution_scope = get_option( 'sz_attribution_global_loading', 'checkout_only' );
+	if ( 'checkout_only' === $attribution_scope && ! is_checkout() ) {
+		wp_dequeue_script( 'sourcebuster-js' );
+		wp_dequeue_script( 'wc-order-attribution' );
+	}
+
+	// CSS Optimization setting.
+	$optimize_css = get_option( 'sz_optimize_wc_css', '1' );
+	if ( '1' === $optimize_css ) {
+		// Dequeue WooCommerce core CSS on non-store pages.
+		if ( ! is_woocommerce() && ! is_cart() && ! is_checkout() && ! is_account_page() && ! is_product() ) {
+			wp_dequeue_style( 'woocommerce-layout' );
+			wp_dequeue_style( 'woocommerce-smallscreen' );
+			wp_dequeue_style( 'woocommerce-general' );
+			wp_dequeue_style( 'woocommerce-inline' );
+			wp_dequeue_style( 'wc-blocks-style' );
+			wp_dequeue_style( 'wc-blocks-vendors-style' );
+			wp_dequeue_style( 'wc-blocks-packages-style' );
+		}
+	}
+
+	// Cart, checkout, and my-account pages NEED jQuery for WooCommerce core scripts.
+	if ( is_cart() || is_checkout() || is_account_page() ) {
+		if ( ! is_product() ) {
+			wp_dequeue_script( 'wc-add-to-cart-variation' );
+			wp_dequeue_script( 'wc-single-product' );
+			wp_dequeue_script( 'zoom' );
+			wp_dequeue_script( 'select2' );
+			wp_dequeue_style( 'select2' );
+			wp_dequeue_script( 'prettyPhoto' );
+			wp_dequeue_style( 'prettyPhoto' );
+		}
 		return;
 	}
 
-	wp_dequeue_script( 'wc-add-to-cart-variation' );
-	wp_dequeue_script( 'wc-single-product' );
-	wp_dequeue_script( 'zoom' );
-	wp_dequeue_script( 'select2' );
-	wp_dequeue_style( 'select2' );
-	wp_dequeue_script( 'prettyPhoto' );
-	wp_dequeue_style( 'prettyPhoto' );
+	// ── Non-cart/checkout pages (shop, product, archive, front page, standard pages) ──
+
+	// Dequeue WC's AJAX add-to-cart — theme uses HTMX hx-post="/htmx-api/cart/add".
+	wp_dequeue_script( 'wc-add-to-cart' );
+
+	// Dequeue WooCommerce core frontend JS (cart fragments, overlay blocking, cookies).
+	wp_dequeue_script( 'woocommerce' );
+	wp_dequeue_script( 'wc-cart-fragments' );
+
+	// Dequeue jQuery UI & blockUI dependencies.
+	wp_dequeue_script( 'wc-jquery-blockui' );
+	wp_dequeue_script( 'jquery-blockui' );
+	wp_dequeue_script( 'wc-js-cookie' );
+	wp_dequeue_script( 'js-cookie' );
+
+	// Dequeue jQuery itself on non-cart/checkout pages.
+	wp_dequeue_script( 'jquery' );
+	wp_dequeue_script( 'jquery-core' );
+	wp_dequeue_script( 'jquery-migrate' );
+
+	if ( ! is_product() ) {
+		wp_dequeue_script( 'wc-add-to-cart-variation' );
+		wp_dequeue_script( 'wc-single-product' );
+		wp_dequeue_script( 'zoom' );
+		wp_dequeue_script( 'select2' );
+		wp_dequeue_style( 'select2' );
+		wp_dequeue_script( 'prettyPhoto' );
+		wp_dequeue_style( 'prettyPhoto' );
+	}
 }
 add_action( 'wp_enqueue_scripts', 'storefront_zero_dequeue_unused_wc_assets', 99 );
 
@@ -342,10 +412,12 @@ function storefront_zero_defer_htmx( string $tag, string $handle ): string {
 add_filter( 'script_loader_tag', 'storefront_zero_defer_htmx', 20, 2 );
 
 /**
- * Add loading="lazy" to WooCommerce product images on shop and archive pages.
+ * Lazy-load WooCommerce product images, skipping above-the-fold hero images.
  *
- * Filters wp_get_attachment_image_attributes only on WooCommerce product pages
- * to avoid affecting above-the-fold images site-wide.
+ * - Single product pages: the main thumbnail gets fetchpriority="high" and no
+ *   lazy load (it is the LCP element).
+ * - Front page: the hero product thumbnail gets the same treatment.
+ * - All other WooCommerce images (shop, archives, galleries) are lazy-loaded.
  *
  * @param array<string, string> $attr       Image attributes.
  * @param \WP_Post              $attachment Attachment post object.
@@ -353,9 +425,29 @@ add_filter( 'script_loader_tag', 'storefront_zero_defer_htmx', 20, 2 );
  * @return array<string, string> Modified attributes.
  */
 function storefront_zero_lazy_product_images( array $attr, \WP_Post $attachment, $size ): array {
+	// Skip lazy loading for the main product image on single product pages.
+	if ( is_product() && has_post_thumbnail() ) {
+		$thumbnail_id = get_post_thumbnail_id();
+		if ( (string) $attachment->ID === (string) $thumbnail_id ) {
+			$attr['fetchpriority'] = 'high';
+			return $attr;
+		}
+	}
+
+	// Skip lazy loading for the hero image on the front page.
+	if ( is_front_page() && has_post_thumbnail() ) {
+		$thumbnail_id = get_post_thumbnail_id();
+		if ( (string) $attachment->ID === (string) $thumbnail_id ) {
+			$attr['fetchpriority'] = 'high';
+			return $attr;
+		}
+	}
+
+	// Lazy load all other WooCommerce product images.
 	if ( is_woocommerce() ) {
 		$attr['loading'] = 'lazy';
 	}
+
 	return $attr;
 }
 add_filter( 'wp_get_attachment_image_attributes', 'storefront_zero_lazy_product_images', 10, 3 );
@@ -369,7 +461,8 @@ add_filter( 'wp_get_attachment_image_attributes', 'storefront_zero_lazy_product_
  * @return void
  */
 function storefront_zero_purge_search_transients(): void {
-	delete_transient( 'sz_search_hash' );
+	$generation = (int) get_option( 'sz_search_generation', 0 );
+	update_option( 'sz_search_generation', $generation + 1 );
 }
 add_action( 'save_post_product', 'storefront_zero_purge_search_transients' );
 add_action( 'woocommerce_update_product', 'storefront_zero_purge_search_transients' );

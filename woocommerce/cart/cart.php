@@ -13,7 +13,6 @@ do_action( 'woocommerce_before_cart_table' );
 ?>
 
 <form id="cart-content" class="woocommerce-cart-form" action="<?php echo esc_url( wc_get_cart_url() ); ?>" method="post">
-    <?php do_action( 'woocommerce_before_cart_table' ); ?>
 
     <table class="shop_table shop_table_responsive cart woocommerce-cart-form__contents min-w-full" cellspacing="0">
         <thead>
@@ -50,7 +49,7 @@ do_action( 'woocommerce_before_cart_table' );
                 $product_price = apply_filters( 'woocommerce_cart_item_price', WC()->cart->get_product_price( $_product ), $cart_item, $cart_item_key );
 			$product_quantity = sprintf(
 				'<input type="number" name="quantity" value="%d" min="0" max="%d" '
-				. 'class="w-16 border border-gray-300 rounded px-2 py-1 text-sm text-center" '
+				. 'class="w-16 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm text-center dark:bg-darkCard dark:text-gray-100" '
 				. 'aria-label="%s" '
 				. 'hx-post="%s" '
 				. 'hx-trigger="change" '

@@ -82,8 +82,8 @@ get_header();
 								$product_url   = get_permalink( $product_id );
 								$product_title = $product->get_name();
 								?>
-								<article class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-									<a href="<?php echo esc_url( $product_url ); ?>" class="block">
+							<article class="bg-white dark:bg-darkCard border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+								<a href="<?php echo esc_url( $product_url ); ?>" class="block">
 										<?php if ( has_post_thumbnail( $product_id ) ) : ?>
 											<div class="aspect-w-1 aspect-h-1 bg-gray-100">
 												<?php echo get_the_post_thumbnail( $product_id, 'woocommerce_thumbnail', [ 'class' => 'w-full h-full object-cover' ] ); ?>
@@ -96,14 +96,14 @@ get_header();
 									</a>
 
 									<div class="p-4">
-										<h3 class="font-semibold text-gray-900 mb-2">
-											<a href="<?php echo esc_url( $product_url ); ?>" class="hover:text-brand-600 transition-colors">
-												<?php echo esc_html( $product_title ); ?>
-											</a>
-										</h3>
-										<div class="text-lg font-bold text-gray-900">
-											<?php echo wp_kses_post( $product->get_price_html() ); ?>
-										</div>
+								<h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">
+									<a href="<?php echo esc_url( $product_url ); ?>" class="hover:text-brand-600 transition-colors">
+											<?php echo esc_html( $product_title ); ?>
+										</a>
+									</h3>
+									<div class="text-lg font-bold text-gray-900 dark:text-gray-100">
+										<?php echo wp_kses_post( $product->get_price_html() ); ?>
+									</div>
 									</div>
 								</article>
 							<?php endforeach; ?>
@@ -139,9 +139,9 @@ get_header();
 					?>
 						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
 							<?php while ( $recent_posts->have_posts() ) : $recent_posts->the_post(); ?>
-								<article class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-									<?php if ( has_post_thumbnail() ) : ?>
-										<a href="<?php the_permalink(); ?>" class="block">
+							<article class="bg-white dark:bg-darkCard border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+								<?php if ( has_post_thumbnail() ) : ?>
+									<a href="<?php the_permalink(); ?>" class="block">
 											<div class="aspect-w-16 aspect-h-9 bg-gray-100">
 												<?php the_post_thumbnail( 'medium_large', [ 'class' => 'w-full h-full object-cover' ] ); ?>
 											</div>
@@ -149,19 +149,19 @@ get_header();
 									<?php endif; ?>
 
 									<div class="p-4">
-										<h3 class="font-semibold text-gray-900 mb-2">
-											<a href="<?php the_permalink(); ?>" class="hover:text-brand-600 transition-colors">
-												<?php the_title(); ?>
-											</a>
-										</h3>
-										<p class="text-sm text-gray-500 mb-2">
-											<time datetime="<?php echo esc_attr( get_the_date( DATE_W3C ) ); ?>">
-												<?php echo esc_html( get_the_date() ); ?>
-											</time>
-										</p>
-										<div class="text-gray-600 text-sm">
-											<?php the_excerpt(); ?>
-										</div>
+								<h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">
+									<a href="<?php the_permalink(); ?>" class="hover:text-brand-600 transition-colors">
+										<?php the_title(); ?>
+									</a>
+								</h3>
+								<p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+									<time datetime="<?php echo esc_attr( get_the_date( DATE_W3C ) ); ?>">
+										<?php echo esc_html( get_the_date() ); ?>
+									</time>
+								</p>
+								<div class="text-gray-600 dark:text-gray-300 text-sm">
+									<?php the_excerpt(); ?>
+								</div>
 									</div>
 								</article>
 							<?php endwhile; ?>

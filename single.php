@@ -20,11 +20,11 @@ get_header();
 			<article <?php post_class( 'mb-12' ); ?>>
 
 				<header class="entry-header mb-6">
-					<h1 class="entry-title text-3xl font-bold text-gray-900">
+					<h1 class="entry-title text-3xl font-bold text-gray-900 dark:text-gray-100">
 						<?php the_title(); ?>
 					</h1>
 
-					<div class="entry-meta mt-3 text-sm text-gray-500">
+					<div class="entry-meta mt-3 text-sm text-gray-500 dark:text-gray-400">
 						<span class="posted-on">
 							<?php
 							printf(
@@ -55,7 +55,7 @@ get_header();
 					</div>
 				<?php endif; ?>
 
-				<div class="entry-content text-gray-700 text-lg leading-relaxed">
+				<div class="entry-content text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
 					<?php
 					the_content();
 
@@ -66,7 +66,7 @@ get_header();
 					?>
 				</div>
 
-				<footer class="entry-footer mt-8 pt-6 border-t border-gray-200">
+				<footer class="entry-footer mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
 					<?php if ( has_category() ) : ?>
 						<div class="cat-links mb-3">
 							<span class="text-sm font-semibold text-gray-600"><?php esc_html_e( 'Categories:', 'storefront-zero' ); ?></span>

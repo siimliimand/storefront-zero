@@ -50,7 +50,7 @@ it('returns empty output for empty search query', function () {
 it('caches product IDs with a transient keyed by query hash', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/ProductController.php');
 
-    expect($source)->toContain("sz_search_' . hash( 'xxh3'");
+    expect($source)->toContain("sz_search_' . \$generation . '_' . hash( 'xxh3'");
     expect($source)->toContain('get_transient( $cache_key )');
     expect($source)->toContain('set_transient( $cache_key, $product_ids, 60 )');
 });

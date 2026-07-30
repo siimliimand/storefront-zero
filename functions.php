@@ -367,7 +367,7 @@ function storefront_zero_flight_init(): void {
 		try {
 			WC()->session->save_data();
 		} catch ( \Throwable $e ) {
-			// Session errors must not break the request.
+			error_log( sprintf( '[Storefront Zero] WC session save failed: %s in %s on line %d', $e->getMessage(), $e->getFile(), $e->getLine() ) );
 		}
 	} );
 

@@ -5,7 +5,7 @@
  * Storefront Zero theme override for woocommerce/checkout/form-checkout.php.
  *
  * @package Storefront_Zero
- * @version 1.0.0
+ * @version 9.4.0
  */
 
 defined( 'ABSPATH' ) || exit;

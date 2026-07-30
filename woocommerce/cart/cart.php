@@ -5,6 +5,7 @@
  * Storefront Zero theme override for woocommerce/cart/cart.php
  *
  * @package Storefront_Zero
+ * @version 10.8.0
  */
 
 defined( 'ABSPATH' ) || exit;

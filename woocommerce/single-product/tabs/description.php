@@ -5,7 +5,7 @@
  * Storefront Zero theme override for woocommerce/single-product/tabs/description.php
  *
  * @package Storefront_Zero
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 defined( 'ABSPATH' ) || exit;

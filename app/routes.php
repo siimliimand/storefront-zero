@@ -55,7 +55,31 @@ Flight::route( 'POST /htmx-api/cart/add', function () use ( $container ) {
 
 // GET /htmx-api/nonce — Fresh nonce for cache-safe requests.
 Flight::route( 'GET /htmx-api/nonce', function () {
+	// Rate limit: 1 request per second per IP.
+	$ip_key    = 'sfz_nonce_' . md5( $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0' );
+	$last_time = get_transient( $ip_key );
+
+	if ( false !== $last_time ) {
+		$elapsed = microtime( true ) - (float) $last_time;
+
+		if ( $elapsed < 1.0 ) {
+			Flight::halt(
+				429,
+				wp_json_encode( [
+					'error'   => 'Too Many Requests',
+					'message' => 'Please wait before requesting a new nonce.',
+				] )
+			);
+		}
+	}
+
+	set_transient( $ip_key, microtime( true ), 5 );
+
+	// Prevent browsers and proxies from caching this response.
+	header( 'Cache-Control: private, no-store, must-revalidate' );
+	header( 'X-Content-Type-Options: nosniff' );
 	header( 'Content-Type: application/json' );
+
 	echo wp_json_encode( [
 		'nonce' => wp_create_nonce( 'storefront_zero_htmx' ),
 	] );

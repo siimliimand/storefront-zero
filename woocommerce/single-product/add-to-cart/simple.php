@@ -7,7 +7,7 @@
  *
  * @see     https://woocommerce.com/document/template-structure/
  * @package storefront-zero
- * @version 1.0.0
+ * @version 10.2.0
  */
 
 defined( 'ABSPATH' ) || exit;

@@ -24,6 +24,7 @@
             "Tests\\": "tests/"
         },
         "files": [
+            "tests/helpers-wp-stubs.php",
             "tests/helpers.php"
         ]
     },

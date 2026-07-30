@@ -599,6 +599,12 @@ if (!function_exists('get_option')) {
     }
 }
 
+if (!function_exists('update_option')) {
+    function update_option(string $option, mixed $value, bool $autoload = true): bool {
+        return true;
+    }
+}
+
 /*
 |--------------------------------------------------------------------------
 | home_url stub
@@ -648,16 +654,14 @@ if (!class_exists('WpHookStore')) {
     }
 }
 
-if (!function_exists('add_action')) {
-    function add_action(string $tag, callable $callback, int $priority = 10, int $accepted_args = 1): bool {
-        \WpHookStore::add($tag, $callback, $priority);
-        return true;
-    }
+// Override the no-op add_action from wordpress-stubs so WpHookStore
+// receives callbacks. Without this, pre_get_posts hooks never fire.
+function add_action(string $tag, callable $callback, int $priority = 10, int $accepted_args = 1): bool {
+    \WpHookStore::add($tag, $callback, $priority);
+    return true;
 }
 
-if (!function_exists('add_filter')) {
-    function add_filter(string $tag, callable $callback, int $priority = 10, int $accepted_args = 1): bool {
-        \WpHookStore::add($tag, $callback, $priority);
-        return true;
-    }
+function add_filter(string $tag, callable $callback, int $priority = 10, int $accepted_args = 1): bool {
+    \WpHookStore::add($tag, $callback, $priority);
+    return true;
 }

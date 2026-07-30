@@ -21,8 +21,5 @@ abstract class TestCase extends BaseTestCase
         if (!defined('ABSPATH')) {
             define('ABSPATH', dirname(__DIR__) . '/');
         }
-
-        // Load WP function stubs for view rendering tests.
-        require_once dirname(__DIR__) . '/tests/helpers-wp-stubs.php';
     }
 }

@@ -13,7 +13,8 @@ parameters:
         - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
         - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
 
-    # WooCommerce symbols — stubs package is too large for full resolution
+    # WooCommerce function/class stubs are not fully resolved by phpstan-wordpress;
+    # these ignores prevent false positives.
     ignoreErrors:
         - '#Function WC not found\.#'
         - '#Function wc_get_product not found\.#'
@@ -21,9 +22,6 @@ parameters:
         - '#Function wc_get_cart_url not found\.#'
         - '#Function wc_get_notices not found\.#'
         - '#Function wc_clear_notices not found\.#'
-        - '#Function woocommerce_product_loop_start not found\.#'
-        - '#Function wc_get_template_part not found\.#'
-        - '#Function woocommerce_product_loop_end not found\.#'
         - '#Function is_product not found\.#'
         - '#Function is_woocommerce not found\.#'
         - '#Class WC_Cart not found\.#'
@@ -31,7 +29,6 @@ parameters:
         - '#Call to method .* on an unknown class WC_Cart\.#'
         - '#Parameter .* of method .* has invalid type WC_Cart\.#'
         - '#Anonymous function has invalid return type WC_Cart\.#'
-        - '#Ternary operator condition is always true\.#'
         - '#Call to method .* on an unknown class WC_Product\.#'
 
 includes:

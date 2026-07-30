@@ -42,8 +42,8 @@ class Container
     /**
      * Resolve a service by identifier.
      *
-     * Factories are called on every get() call — use set() with a
-     * singleton-style factory if the service should be shared.
+     * Factories are called on first get() and cached; subsequent calls
+     * return the singleton.
      *
      * @throws \RuntimeException If no factory is registered for $id.
      */
@@ -59,7 +59,10 @@ class Container
             );
         }
 
-        return $this->factories[$id]($this);
+        $result = $this->factories[$id]($this);
+        $this->singletons[$id] = $result;
+
+        return $result;
     }
 
     /**

@@ -12,10 +12,12 @@ declare(strict_types=1);
 namespace ThemeApp\Controllers;
 
 use Flight;
+use ThemeApp\Concerns\FlushesWcNotices;
 use ThemeApp\View;
 
 class CartController
 {
+    use FlushesWcNotices;
 	/**
 	 * View instance for rendering templates.
 	 *
@@ -179,36 +181,5 @@ class CartController
 		}
 
 		echo $this->flush_wc_notices();
-	}
-
-	/**
-	 * Capture WooCommerce notices and set HX-Trigger header for toast display.
-	 *
-	 * Reads all WC notices, clears them to prevent double-display, and returns
-	 * the first notice as an HX-Trigger JSON header. If no notices exist,
-	 * returns an empty string.
-	 *
-	 * @return string HTML-safe empty string or empty output (header is set as side effect).
-	 */
-	private function flush_wc_notices(): string
-	{
-		$notices = wc_get_notices();
-		wc_clear_notices();
-
-		if ( ! empty( $notices ) ) {
-			$notice = reset( $notices );
-			$type   = $notice['type'] ?? 'notice';
-
-			header(
-				'HX-Trigger: ' . wp_json_encode( [
-					'showToast' => [
-						'message' => $notice['notice'] ?? '',
-						'type'    => $type,
-					],
-				] )
-			);
-		}
-
-		return '';
 	}
 }

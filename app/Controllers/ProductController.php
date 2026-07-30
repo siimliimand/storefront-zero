@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace ThemeApp\Controllers;
 
 use Flight;
+use ThemeApp\Concerns\FlushesWcNotices;
 use ThemeApp\View;
 
 /**
@@ -19,6 +20,7 @@ use ThemeApp\View;
  */
 class ProductController
 {
+    use FlushesWcNotices;
     /**
      * View instance for rendering templates.
      *
@@ -57,7 +59,8 @@ class ProductController
             return;
         }
 
-        $cache_key = 'sz_search_' . hash( 'xxh3', $query );
+        $generation = (int) get_option( 'sz_search_generation', 0 );
+        $cache_key = 'sz_search_' . $generation . '_' . hash( 'xxh3', $query );
         $products  = get_transient( $cache_key );
 
         if ( false === $products ) {
@@ -107,8 +110,6 @@ class ProductController
     public function filterProducts(): void
     {
         header( 'Content-Type: text/html; charset=utf-8' );
-
-        ob_start();
 
         $request = Flight::request();
 
@@ -262,36 +263,5 @@ class ProductController
         ] );
 
         echo $this->flush_wc_notices();
-    }
-
-    /**
-     * Capture WooCommerce notices and set HX-Trigger header for toast display.
-     *
-     * Reads all WC notices, clears them to prevent double-display, and returns
-     * the first notice as an HX-Trigger JSON header. If no notices exist,
-     * returns an empty string.
-     *
-     * @return string HTML-safe empty string (header is set as side effect).
-     */
-    private function flush_wc_notices(): string
-    {
-        $notices = wc_get_notices();
-        wc_clear_notices();
-
-        if ( ! empty( $notices ) ) {
-            $notice = reset( $notices );
-            $type   = $notice['type'] ?? 'notice';
-
-            header(
-                'HX-Trigger: ' . wp_json_encode( [
-                    'showToast' => [
-                        'message' => $notice['notice'] ?? '',
-                        'type'    => $type,
-                    ],
-                ] )
-            );
-        }
-
-        return '';
     }
 }

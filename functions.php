@@ -29,10 +29,37 @@ require_once __DIR__ . '/inc/wc-optimization.php';
 // HTMX API router: rewrite rules, query vars, and Flight initialization.
 require_once __DIR__ . '/inc/htmx-router.php';
 
+// Cache-related functions: transient purging and invalidation.
+require_once __DIR__ . '/inc/cache.php';
+
 /**
  * Theme version for cache busting.
  */
 define( 'SZ_HTMX_VERSION', '1.9.10' );
+
+/**
+ * HTMX v2.0 Upgrade Assessment
+ *
+ * Current version: 1.9.10 (bundled at assets/js/vendor/htmx.min.js)
+ *
+ * Key HTMX 2.0 changes relevant to this theme:
+ * - htmx.config.selfRequestsOnly removed (was false by default, no impact)
+ * - HX-Trigger response header now dispatches events on the triggering element,
+ *   not document.body. Our showToast listener on document.body will need to move
+ *   to the target element or use a delegated listener.
+ * - htmx:configRequest event model unchanged — our nonce injection works as-is
+ * - hx-swap="outerHTML" behavior unchanged
+ * - New htmx:beforeSend event for request interception
+ *
+ * Migration steps:
+ * 1. Update vendor/htmx.min.js to 2.0.x
+ * 2. Move showToast listener from document.body to event delegation on target
+ * 3. Test all HTMX endpoints (cart, search, filter) with new event model
+ * 4. Update SZ_HTMX_VERSION constant
+ *
+ * Recommendation: Upgrade after WC 9.x stabilizes. Current 1.9.10 is functional
+ * and well-tested. No urgency unless a security patch is needed.
+ */
 
 /**
  * Get file modification time as a version string, with fallback.
@@ -75,19 +102,3 @@ function storefront_zero_widgets_init(): void {
 	] );
 }
 add_action( 'widgets_init', 'storefront_zero_widgets_init' );
-
-/**
- * Purge cached search transients when products change.
- *
- * Deletes the sz_search_hash transient to ensure search results
- * reflect the latest product data.
- *
- * @return void
- */
-function storefront_zero_purge_search_transients(): void {
-	$generation = (int) get_option( 'sz_search_generation', 0 );
-	update_option( 'sz_search_generation', $generation + 1 );
-}
-add_action( 'save_post_product', 'storefront_zero_purge_search_transients' );
-add_action( 'woocommerce_update_product', 'storefront_zero_purge_search_transients' );
-add_action( 'delete_post', 'storefront_zero_purge_search_transients' );

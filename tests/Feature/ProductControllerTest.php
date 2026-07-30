@@ -516,7 +516,7 @@ it('storefront_zero_flight_init function exists', function () {
 });
 
 it('storefront_zero_flight_init is hooked to template_redirect', function () {
-    $source = file_get_contents(__DIR__ . '/../../functions.php');
+    $source = file_get_contents(__DIR__ . '/../../inc/htmx-router.php');
 
     expect($source)->toContain("add_action( 'template_redirect', 'storefront_zero_flight_init', 5 )");
 });
@@ -534,19 +534,19 @@ it('storefront_zero_purge_search_transients function exists', function () {
 });
 
 it('storefront_zero_purge_search_transients is hooked to save_post_product', function () {
-    $source = file_get_contents(__DIR__ . '/../../functions.php');
+    $source = file_get_contents(__DIR__ . '/../../inc/cache.php');
 
     expect($source)->toContain("add_action( 'save_post_product', 'storefront_zero_purge_search_transients' )");
 });
 
 it('storefront_zero_purge_search_transients is hooked to woocommerce_update_product', function () {
-    $source = file_get_contents(__DIR__ . '/../../functions.php');
+    $source = file_get_contents(__DIR__ . '/../../inc/cache.php');
 
     expect($source)->toContain("add_action( 'woocommerce_update_product', 'storefront_zero_purge_search_transients' )");
 });
 
 it('storefront_zero_purge_search_transients is hooked to delete_post', function () {
-    $source = file_get_contents(__DIR__ . '/../../functions.php');
+    $source = file_get_contents(__DIR__ . '/../../inc/cache.php');
 
     expect($source)->toContain("add_action( 'delete_post', 'storefront_zero_purge_search_transients' )");
 });

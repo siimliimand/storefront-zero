@@ -55,4 +55,6 @@ class ToastNotification extends HTMLElement {
 	}
 }
 
-customElements.define('toast-notification', ToastNotification);
+if (!customElements.get('toast-notification')) {
+	customElements.define('toast-notification', ToastNotification);
+}

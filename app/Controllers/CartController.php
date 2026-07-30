@@ -112,6 +112,22 @@ class CartController
 	}
 
 	/**
+	 * Render full cart page HTML fragment.
+	 * Re-renders the WooCommerce cart form (table, quantities, coupons,
+	 * totals) for HTMX swap targeting #cart-content.
+	 *
+	 * @param array<string, mixed> $data Optional view data.
+	 */
+	public function renderCartPage( array $data = [] ): void
+	{
+		header( 'Content-Type: text/html; charset=utf-8' );
+
+		$this->view->render( 'cart-page', $data );
+
+		echo $this->flush_wc_notices();
+	}
+
+	/**
 	 * Update cart item quantity via HTMX POST.
 	 * Returns updated mini-cart fragment with HX-Trigger header.
 	 */

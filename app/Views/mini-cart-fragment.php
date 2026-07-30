@@ -30,7 +30,7 @@ $added_product = $added_product ?? '';
         </svg>
         <?php if ( $cart_count > 0 ) : ?>
             <span class="absolute -top-2 -right-2 bg-brand-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                <?php echo esc_html( $cart_count ); ?>
+                <?php echo esc_html( (string) $cart_count ); ?>
             </span>
         <?php endif; ?>
     </a>

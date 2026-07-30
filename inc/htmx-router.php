@@ -67,7 +67,7 @@ function storefront_zero_flight_init(): void {
 	$api_prefix = $site_path . '/htmx-api';
 	Flight::set( 'base_url', $api_prefix );
 
-	require_once __DIR__ . '/app/routes.php';
+	require_once dirname( __DIR__ ) . '/app/routes.php';
 
 	// Persist WooCommerce session after Flight handles the request.
 	Flight::after( 'start', function () {

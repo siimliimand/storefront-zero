@@ -63,13 +63,11 @@ Flight::route( 'GET /htmx-api/nonce', function () {
 		$elapsed = microtime( true ) - (float) $last_time;
 
 		if ( $elapsed < 1.0 ) {
-			Flight::halt(
-				429,
-				wp_json_encode( [
-					'error'   => 'Too Many Requests',
-					'message' => 'Please wait before requesting a new nonce.',
-				] )
-			);
+			$rateLimitMessage = wp_json_encode( [
+				'error'   => 'Too Many Requests',
+				'message' => 'Please wait before requesting a new nonce.',
+			] );
+			Flight::halt( 429, is_string( $rateLimitMessage ) ? $rateLimitMessage : '' );
 		}
 	}
 

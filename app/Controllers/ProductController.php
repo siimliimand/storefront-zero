@@ -84,12 +84,11 @@ class ProductController
         if ( empty( $products ) ) {
             $products = [];
         } else {
-            $products = array_filter(
-                wc_get_products( [
-                    'include' => $products,
-                    'return'  => 'objects',
-                ] )
-            );
+            $results = wc_get_products( [
+                'include' => $products,
+                'return'  => 'objects',
+            ] );
+            $products = array_filter( is_array( $results ) ? $results : [] );
         }
 
         $this->view->render( 'search-results', [

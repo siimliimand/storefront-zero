@@ -46,7 +46,8 @@ class CartController
 
 	/**
 	 * Add product to cart via HTMX POST.
-	 * Returns updated mini-cart fragment with HX-Trigger header.
+	 * Returns updated mini-cart fragment (swapped via outerHTML — no
+	 * HX-Trigger header needed because the response IS the replacement).
 	 */
 	public function addToCart(): void
 	{
@@ -62,7 +63,7 @@ class CartController
 		$variation_id = isset( $data['variation_id'] ) ? absint( $data['variation_id'] ) : 0;
 
 		if ( empty( $product_id ) || ! wc_get_product( $product_id ) ) {
-			ob_end_clean();
+			ob_get_clean();
 			status_header( 400 );
 			$this->view->render( 'cart-error', [ 'message' => __( 'Invalid product. Please try again.', 'storefront-zero' ) ] );
 			echo $this->flush_wc_notices();
@@ -81,21 +82,27 @@ class CartController
 
 		$added = $this->cart->add_to_cart( $product_id, $quantity, $variation_id, $variation );
 
-		if ( $added ) {
+		if ( is_string( $added ) ) {
 			// Extract the added product name from the cart item.
 			$cart_item    = $this->cart->get_cart_item( $added );
 			$product_name = $cart_item && isset( $cart_item['data'] )
 				? $cart_item['data']->get_name()
 				: '';
 
-			header( 'HX-Trigger: cartUpdated' );
+			// NOTE: No HX-Trigger header here. The response body IS the
+			// mini-cart fragment swapped via outerHTML into #mini-cart-container.
+			// Firing cartUpdated would cause the OLD element to issue a redundant
+			// GET before the swap removes it; when that GET's response arrives the
+			// stale (detached) target makes parentElt() return null → querySelector
+			// crash. updateQuantity() / removeItem() still set the header because
+			// they swap #cart-content, not the mini-cart.
 			$this->renderMiniCart( [ 'added_product' => $product_name ] );
 		} else {
 			status_header( 400 );
 			$this->view->render( 'cart-error', [ 'message' => __( 'Could not add product to cart. Please try again.', 'storefront-zero' ) ] );
 		}
 
-		ob_end_clean();
+		echo ob_get_clean();
 		echo $this->flush_wc_notices();
 	}
 
@@ -142,7 +149,7 @@ class CartController
 		$quantity      = isset( Flight::request()->data['quantity'] ) ? absint( Flight::request()->data['quantity'] ) : 1;
 
 		if ( empty( $cart_item_key ) ) {
-			ob_end_clean();
+			ob_get_clean();
 			status_header( 400 );
 			echo '<!-- Invalid cart item key -->';
 			echo $this->flush_wc_notices();
@@ -165,7 +172,7 @@ class CartController
 			echo '<!-- Could not update cart -->';
 		}
 
-		ob_end_clean();
+		echo ob_get_clean();
 		echo $this->flush_wc_notices();
 	}
 
@@ -182,7 +189,7 @@ class CartController
 		$cart_item_key = isset( Flight::request()->data['cart_item_key'] ) ? sanitize_text_field( wp_unslash( Flight::request()->data['cart_item_key'] ) ) : '';
 
 		if ( empty( $cart_item_key ) ) {
-			ob_end_clean();
+			ob_get_clean();
 			status_header( 400 );
 			echo '<!-- Invalid cart item key -->';
 			echo $this->flush_wc_notices();
@@ -199,7 +206,7 @@ class CartController
 			echo '<!-- Could not remove cart item -->';
 		}
 
-		ob_end_clean();
+		echo ob_get_clean();
 		echo $this->flush_wc_notices();
 	}
 }

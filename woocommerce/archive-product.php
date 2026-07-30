@@ -5,6 +5,7 @@
  * Storefront Zero theme override for woocommerce/archive-product.php
  *
  * @package Storefront_Zero
+ * @version 8.6.0
  */
 
 get_header();

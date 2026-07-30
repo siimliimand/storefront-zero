@@ -8,7 +8,7 @@ document.addEventListener('htmx:configRequest', function(evt) {
 
 /**
  * Post-swap handler: dispatches custom event, re-inits WooCommerce,
- * toggles search results, and processes toast notifications.
+ * and toggles search results.
  * Other scripts can listen: window.addEventListener('theme:dom-updated', handler)
  */
 document.addEventListener('htmx:afterSwap', function(evt) {
@@ -34,21 +34,22 @@ document.addEventListener('htmx:afterSwap', function(evt) {
         evt.detail.target.classList.toggle('hidden', !hasContent);
     }
 
-    // Toast notification integration with HTMX responses.
-    var triggerHeader = evt.detail.xhr?.getResponseHeader('X-Trigger');
-    if (triggerHeader) {
-        try {
-            var triggers = JSON.parse(triggerHeader);
-            if (triggers.showToast) {
-                var toast = document.createElement('toast-notification');
-                toast.setAttribute('message', triggers.showToast.message || '');
-                toast.setAttribute('type', triggers.showToast.type || 'success');
-                document.body.appendChild(toast);
-            }
-        } catch (e) {
-            // Header is not JSON — ignore.
-        }
-    }
+});
+
+/**
+ * HTMX showToast event — native HX-Trigger header dispatch.
+ * Server sends: HX-Trigger: {"showToast": {"message": "...", "type": "success"}}
+ * HTMX automatically fires this custom event on document.body.
+ * Supports single toast or array payloads.
+ */
+document.body.addEventListener('showToast', function(evt) {
+    var toasts = Array.isArray(evt.detail) ? evt.detail : [evt.detail];
+    toasts.forEach(function(toastData) {
+        var toast = document.createElement('toast-notification');
+        toast.setAttribute('message', toastData.message || '');
+        toast.setAttribute('type', toastData.type || 'success');
+        document.body.appendChild(toast);
+    });
 });
 
 /**

@@ -28,10 +28,10 @@ it('namespaces under ThemeApp\\Controllers', function () {
     expect($source)->toContain('namespace ThemeApp\\Controllers');
 });
 
-it('imports ThemeApp\View', function () {
+it('imports ThemeApp\\ViewInterface', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/ProductController.php');
 
-    expect($source)->toContain('use ThemeApp\\View');
+    expect($source)->toContain('use ThemeApp\\ViewInterface');
 });
 
 it('sanitizes search input with sanitize_text_field', function () {

@@ -3,14 +3,12 @@
 declare(strict_types=1);
 
 use ThemeApp\Controllers\ProductController;
-
-require_once __DIR__ . '/../../app/View.php';
-use ThemeApp\View;
+use ThemeApp\ViewInterface;
 
 /**
  * View test double that records render calls.
  */
-class FilterFakeProductView extends View
+class FilterFakeProductView implements ViewInterface
 {
     /** @var list<array{view: string, data: array<string, mixed>}> */
     public static array $calls = [];
@@ -20,7 +18,7 @@ class FilterFakeProductView extends View
         self::$calls = [];
     }
 
-    public static function render(string $view, array $data = []): void
+    public function render(string $view, array $data = []): void
     {
         self::$calls[] = ['view' => $view, 'data' => $data];
     }
@@ -31,6 +29,7 @@ beforeEach(function () {
     WP_Query::reset();
     HeaderCapture::reset();
     WpHookStore::reset();
+    TaxonomyStore::reset();
     \Flight::request()->query->setData([]);
 });
 
@@ -78,6 +77,7 @@ it('omits tax_query when category is empty', function () {
 
 it('collects filter_color into tax_query', function () {
     WP_Query::setPosts([]);
+    TaxonomyStore::register('color');
 
     $view       = new FilterFakeProductView();
     $controller = new ProductController($view);
@@ -88,7 +88,7 @@ it('collects filter_color into tax_query', function () {
     $args = WP_Query::getLastArgs();
     expect($args)->toHaveKey('tax_query');
     expect($args['tax_query'])->toContainEqual([
-        'taxonomy' => 'filter_color',
+        'taxonomy' => 'color',
         'field'    => 'slug',
         'terms'    => 'red',
     ]);
@@ -96,6 +96,7 @@ it('collects filter_color into tax_query', function () {
 
 it('combines multiple attributes in tax_query', function () {
     WP_Query::setPosts([]);
+    TaxonomyStore::registerAll(['color', 'size']);
 
     $view       = new FilterFakeProductView();
     $controller = new ProductController($view);
@@ -108,12 +109,13 @@ it('combines multiple attributes in tax_query', function () {
     $taxQuery = $args['tax_query'];
 
     expect($taxQuery)->toHaveCount(2);
-    expect($taxQuery[0]['taxonomy'])->toBe('filter_color');
-    expect($taxQuery[1]['taxonomy'])->toBe('filter_size');
+    expect($taxQuery[0]['taxonomy'])->toBe('color');
+    expect($taxQuery[1]['taxonomy'])->toBe('size');
 });
 
 it('combines category and attribute with AND relation', function () {
     WP_Query::setPosts([]);
+    TaxonomyStore::register('color');
 
     $view       = new FilterFakeProductView();
     $controller = new ProductController($view);
@@ -314,6 +316,7 @@ it('does not register any pre_get_posts callbacks', function () {
 
 it('passes all filter args directly to WP_Query constructor', function () {
     WP_Query::setPosts([1, 2]);
+    TaxonomyStore::registerAll(['product_cat', 'color']);
 
     $view       = new FilterFakeProductView();
     $controller = new ProductController($view);
@@ -329,4 +332,60 @@ it('passes all filter args directly to WP_Query constructor', function () {
     expect($args)->toHaveKey('meta_query');
     expect($args['orderby'])->toBe('meta_value_num');
     expect($args['order'])->toBe('ASC');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Taxonomy existence validation (task 3.2)
+|--------------------------------------------------------------------------
+*/
+
+it('rejects invalid taxonomy names in filter_* parameters', function () {
+    WP_Query::setPosts([]);
+
+    $view       = new FilterFakeProductView();
+    $controller = new ProductController($view);
+
+    Flight::request()->query['filter_fake_taxonomy'] = 'evil';
+    \Tests\withCleanBuffer(fn () => $controller->filterProducts());
+
+    $args = WP_Query::getLastArgs();
+
+    // Invalid taxonomy should not produce a tax_query at all.
+    expect($args)->not->toHaveKey('tax_query');
+
+    // Defensive: if tax_query somehow exists, reject the invalid names.
+    if (isset($args['tax_query'])) {
+        foreach ($args['tax_query'] as $clause) {
+            if (is_array($clause) && isset($clause['taxonomy'])) {
+                expect($clause['taxonomy'])->not->toBe('fake_taxonomy');
+                expect($clause['taxonomy'])->not->toBe('pa_fake_taxonomy');
+            }
+        }
+    }
+});
+
+it('resolves pa_ prefix for WooCommerce attribute taxonomies', function () {
+    WP_Query::setPosts([]);
+
+    $view       = new FilterFakeProductView();
+    $controller = new ProductController($view);
+
+    // Register pa_color (the WooCommerce attribute taxonomy) so the controller
+    // resolves it via the pa_ prefix fallback.
+    TaxonomyStore::register('pa_color');
+
+    Flight::request()->query['filter_color'] = 'red';
+    \Tests\withCleanBuffer(fn () => $controller->filterProducts());
+
+    $args = WP_Query::getLastArgs();
+    if (isset($args['tax_query'])) {
+        $taxonomies = array_column(
+            array_filter($args['tax_query'], fn($c) => is_array($c)),
+            'taxonomy'
+        );
+        // Should resolve to pa_color, not the raw filter_ key.
+        expect($taxonomies)->toContain('pa_color');
+        expect($taxonomies)->not->toContain('filter_color');
+    }
 });

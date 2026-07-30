@@ -13,7 +13,7 @@ namespace ThemeApp\Controllers;
 
 use Flight;
 use ThemeApp\Concerns\FlushesWcNotices;
-use ThemeApp\View;
+use ThemeApp\ViewInterface;
 
 class CartController
 {
@@ -21,9 +21,9 @@ class CartController
 	/**
 	 * View instance for rendering templates.
 	 *
-	 * @var \ThemeApp\View
+	 * @var \ThemeApp\ViewInterface
 	 */
-	private View $view;
+	private ViewInterface $view;
 
 	/**
 	 * WooCommerce cart instance.
@@ -35,10 +35,10 @@ class CartController
 	/**
 	 * Constructor. Injected by the DI container.
 	 *
-	 * @param \WC_Cart     $cart WooCommerce cart instance.
-	 * @param \ThemeApp\View $view View renderer.
+	 * @param \WC_Cart           $cart WooCommerce cart instance.
+	 * @param \ThemeApp\ViewInterface $view View renderer.
 	 */
-	public function __construct( \WC_Cart $cart, View $view )
+	public function __construct( \WC_Cart $cart, ViewInterface $view )
 	{
 		$this->cart = $cart;
 		$this->view = $view;
@@ -46,7 +46,8 @@ class CartController
 
 	/**
 	 * Add product to cart via HTMX POST.
-	 * Returns updated mini-cart fragment with HX-Trigger header.
+	 * Returns updated mini-cart fragment (swapped via outerHTML — no
+	 * HX-Trigger header needed because the response IS the replacement).
 	 */
 	public function addToCart(): void
 	{
@@ -62,7 +63,7 @@ class CartController
 		$variation_id = isset( $data['variation_id'] ) ? absint( $data['variation_id'] ) : 0;
 
 		if ( empty( $product_id ) || ! wc_get_product( $product_id ) ) {
-			ob_end_clean();
+			ob_get_clean();
 			status_header( 400 );
 			$this->view->render( 'cart-error', [ 'message' => __( 'Invalid product. Please try again.', 'storefront-zero' ) ] );
 			echo $this->flush_wc_notices();
@@ -81,20 +82,27 @@ class CartController
 
 		$added = $this->cart->add_to_cart( $product_id, $quantity, $variation_id, $variation );
 
-		if ( $added ) {
+		if ( is_string( $added ) ) {
 			// Extract the added product name from the cart item.
 			$cart_item    = $this->cart->get_cart_item( $added );
 			$product_name = $cart_item && isset( $cart_item['data'] )
 				? $cart_item['data']->get_name()
 				: '';
 
-			header( 'HX-Trigger: cartUpdated' );
+			// NOTE: No HX-Trigger header here. The response body IS the
+			// mini-cart fragment swapped via outerHTML into #mini-cart-container.
+			// Firing cartUpdated would cause the OLD element to issue a redundant
+			// GET before the swap removes it; when that GET's response arrives the
+			// stale (detached) target makes parentElt() return null → querySelector
+			// crash. updateQuantity() / removeItem() still set the header because
+			// they swap #cart-content, not the mini-cart.
 			$this->renderMiniCart( [ 'added_product' => $product_name ] );
 		} else {
 			status_header( 400 );
 			$this->view->render( 'cart-error', [ 'message' => __( 'Could not add product to cart. Please try again.', 'storefront-zero' ) ] );
 		}
 
+		echo ob_get_clean();
 		echo $this->flush_wc_notices();
 	}
 
@@ -112,8 +120,24 @@ class CartController
 	}
 
 	/**
+	 * Render full cart page HTML fragment.
+	 * Re-renders the WooCommerce cart form (table, quantities, coupons,
+	 * totals) for HTMX swap targeting #cart-content.
+	 *
+	 * @param array<string, mixed> $data Optional view data.
+	 */
+	public function renderCartPage( array $data = [] ): void
+	{
+		header( 'Content-Type: text/html; charset=utf-8' );
+
+		$this->view->render( 'cart-page', $data );
+
+		echo $this->flush_wc_notices();
+	}
+
+	/**
 	 * Update cart item quantity via HTMX POST.
-	 * Returns updated mini-cart fragment with HX-Trigger header.
+	 * Returns updated cart page fragment with HX-Trigger header.
 	 */
 	public function updateQuantity(): void
 	{
@@ -125,7 +149,7 @@ class CartController
 		$quantity      = isset( Flight::request()->data['quantity'] ) ? absint( Flight::request()->data['quantity'] ) : 1;
 
 		if ( empty( $cart_item_key ) ) {
-			ob_end_clean();
+			ob_get_clean();
 			status_header( 400 );
 			echo '<!-- Invalid cart item key -->';
 			echo $this->flush_wc_notices();
@@ -142,18 +166,19 @@ class CartController
 
 		if ( $success ) {
 			header( 'HX-Trigger: cartUpdated' );
-			$this->renderMiniCart();
+			$this->renderCartPage();
 		} else {
 			status_header( 400 );
 			echo '<!-- Could not update cart -->';
 		}
 
+		echo ob_get_clean();
 		echo $this->flush_wc_notices();
 	}
 
 	/**
 	 * Remove cart item via HTMX DELETE.
-	 * Returns updated mini-cart fragment with HX-Trigger header.
+	 * Returns updated cart page fragment with HX-Trigger header.
 	 */
 	public function removeItem(): void
 	{
@@ -164,7 +189,7 @@ class CartController
 		$cart_item_key = isset( Flight::request()->data['cart_item_key'] ) ? sanitize_text_field( wp_unslash( Flight::request()->data['cart_item_key'] ) ) : '';
 
 		if ( empty( $cart_item_key ) ) {
-			ob_end_clean();
+			ob_get_clean();
 			status_header( 400 );
 			echo '<!-- Invalid cart item key -->';
 			echo $this->flush_wc_notices();
@@ -175,12 +200,13 @@ class CartController
 
 		if ( $removed ) {
 			header( 'HX-Trigger: cartUpdated' );
-			$this->renderMiniCart();
+			$this->renderCartPage();
 		} else {
 			status_header( 400 );
 			echo '<!-- Could not remove cart item -->';
 		}
 
+		echo ob_get_clean();
 		echo $this->flush_wc_notices();
 	}
 }

@@ -513,7 +513,11 @@ if (!function_exists('WC')) {
 if (!class_exists('WcNoticesStub')) {
     class WcNoticesStub
     {
-        /** @var array<int, array{type: string, notice: string}> */
+        /**
+         * Notices keyed by type (WooCommerce grouped format).
+         *
+         * @var array<string, list<string>>
+         */
         private static array $notices = [];
 
         private static int $getCalls = 0;
@@ -523,14 +527,17 @@ if (!class_exists('WcNoticesStub')) {
         /**
          * Pre-populate notices for the next wc_get_notices() call.
          *
-         * @param array<int, array{type: string, notice: string}> $notices
+         * Accepts WooCommerce's grouped format:
+         *   ['success' => ['msg1'], 'error' => ['msg2']]
+         *
+         * @param array<string, list<string>> $notices
          */
         public static function setNotices(array $notices): void
         {
             self::$notices = $notices;
         }
 
-        /** @return array<int, array{type: string, notice: string}> */
+        /** @return array<string, list<string>> */
         public static function get(): array
         {
             self::$getCalls++;
@@ -614,6 +621,56 @@ if (!function_exists('update_option')) {
 if (!function_exists('home_url')) {
     function home_url(string $path = ''): string {
         return 'https://example.com' . $path;
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| taxonomy_exists stub (controllable per-test via TaxonomyStore)
+|--------------------------------------------------------------------------
+*/
+
+if (!class_exists('TaxonomyStore')) {
+    class TaxonomyStore
+    {
+        /** @var array<string, bool> Registered taxonomy slugs. */
+        private static array $taxonomies = [];
+
+        /**
+         * Register a taxonomy so taxonomy_exists() returns true for it.
+         */
+        public static function register(string $taxonomy): void
+        {
+            self::$taxonomies[$taxonomy] = true;
+        }
+
+        /**
+         * Register multiple taxonomies at once.
+         *
+         * @param list<string> $taxonomies
+         */
+        public static function registerAll(array $taxonomies): void
+        {
+            foreach ($taxonomies as $t) {
+                self::$taxonomies[$t] = true;
+            }
+        }
+
+        public static function exists(string $taxonomy): bool
+        {
+            return isset(self::$taxonomies[$taxonomy]);
+        }
+
+        public static function reset(): void
+        {
+            self::$taxonomies = [];
+        }
+    }
+}
+
+if (!function_exists('taxonomy_exists')) {
+    function taxonomy_exists(string $taxonomy): bool {
+        return \TaxonomyStore::exists($taxonomy);
     }
 }
 

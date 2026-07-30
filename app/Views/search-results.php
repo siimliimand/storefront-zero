@@ -34,8 +34,8 @@ if ( empty( $products ) ) :
             continue;
         }
         $image_id   = $product->get_image_id();
-        $image_url  = ( is_int( $image_id ) && $image_id > 0 )
-            ? wp_get_attachment_image_url( $image_id, 'thumbnail' )
+        $image_url  = ( is_numeric( $image_id ) && (int) $image_id > 0 )
+            ? wp_get_attachment_image_url( (int) $image_id, 'thumbnail' )
             : '';
     ?>
     <a href="<?php echo esc_url( $permalink ); ?>"

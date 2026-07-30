@@ -51,14 +51,14 @@ function captureOutput(callable $fn): string
 */
 
 it('renders a valid view and produces output', function () {
-    $output = captureOutput(fn () => View::render('mini-cart-fragment'));
+    $output = captureOutput(fn () => (new View())->render('mini-cart-fragment'));
 
     expect($output)->not->toBeEmpty();
     expect($output)->toBeString();
 });
 
 it('renders search-results view with data', function () {
-    $output = captureOutput(fn () => View::render('search-results', [
+    $output = captureOutput(fn () => (new View())->render('search-results', [
         'products' => [],
         'query'    => 'test',
     ]));
@@ -85,7 +85,7 @@ it('throws RuntimeException for missing view when WP_DEBUG is true', function ()
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessageMatches('/View .* not found/');
 
-    View::render('this-view-does-not-exist-' . uniqid());
+    (new View())->render('this-view-does-not-exist-' . uniqid());
 });
 
 /*
@@ -100,7 +100,7 @@ it('outputs error comment for missing view when WP_DEBUG is false', function () 
         $this->markTestSkipped('WP_DEBUG is true; cannot test production path.');
     }
 
-    $output = captureOutput(fn () => View::render('this-view-does-not-exist-' . uniqid()));
+    $output = captureOutput(fn () => (new View())->render('this-view-does-not-exist-' . uniqid()));
 
     expect($output)->toContain('<!-- View not found:');
 });
@@ -132,7 +132,7 @@ it('cleans only its own buffers when view throws an exception', function () {
         ob_start();
         $outerLevel = ob_get_level();
 
-        $output = captureOutput(fn () => View::render($tempName));
+        $output = captureOutput(fn () => (new View())->render($tempName));
 
         // The outer buffer should still exist — render cleaned only its own.
         expect(ob_get_level())->toBeGreaterThanOrEqual($outerLevel);
@@ -163,7 +163,7 @@ it('preserves surrounding output when view throws an exception', function () {
     try {
         $output = captureOutput(function () use ($tempName) {
             echo 'before';
-            View::render($tempName);
+            (new View())->render($tempName);
             echo 'after';
         });
 
@@ -190,7 +190,7 @@ it('extracts data variables into the template scope', function () {
     file_put_contents($tempPath, '<?php echo $greeting . " " . $target;');
 
     try {
-        $output = captureOutput(fn () => View::render($tempName, [
+        $output = captureOutput(fn () => (new View())->render($tempName, [
             'greeting' => 'hello',
             'target'   => 'world',
         ]));
@@ -212,7 +212,7 @@ it('ignores data keys that collide with local variables (EXTR_SKIP)', function (
     file_put_contents($tempPath, '<?php echo "rendered";');
 
     try {
-        $output = captureOutput(fn () => View::render($tempName, [
+        $output = captureOutput(fn () => (new View())->render($tempName, [
             'path' => 'SHOULD_NOT_APPEAR',
             'view' => 'SHOULD_NOT_APPEAR',
         ]));
@@ -232,7 +232,7 @@ it('ignores data keys that collide with local variables (EXTR_SKIP)', function (
 it('restores buffer level after successful render', function () {
     $levelBefore = ob_get_level();
 
-    captureOutput(fn () => View::render('mini-cart-fragment'));
+    captureOutput(fn () => (new View())->render('mini-cart-fragment'));
 
     expect(ob_get_level())->toBe($levelBefore);
 });
@@ -247,7 +247,7 @@ it('restores buffer level after failed render', function () {
     try {
         $levelBefore = ob_get_level();
 
-        captureOutput(fn () => View::render($tempName));
+        captureOutput(fn () => (new View())->render($tempName));
 
         expect(ob_get_level())->toBe($levelBefore);
     } finally {
@@ -281,7 +281,7 @@ PHP
     try {
         $levelBefore = ob_get_level();
 
-        $output = captureOutput(fn () => View::render($tempName));
+        $output = captureOutput(fn () => (new View())->render($tempName));
 
         // All buffers should be cleaned — level must return to baseline.
         expect(ob_get_level())->toBe($levelBefore);

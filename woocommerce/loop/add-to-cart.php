@@ -6,6 +6,7 @@
  * Uses HTMX for add-to-cart without full page reload.
  *
  * @package Storefront_Zero
+ * @version 9.2.0
  *
  * @var WC_Product $product  Product object.
  * @var string     $link     Add to cart URL (not used — replaced by HTMX).

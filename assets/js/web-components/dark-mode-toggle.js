@@ -22,7 +22,9 @@ class DarkModeToggle extends HTMLElement {
 
         this._render();
         this._handleClick = this._handleClick.bind(this);
+        this._handleKeydown = this._handleKeydown.bind(this);
         this.addEventListener('click', this._handleClick);
+        this.addEventListener('keydown', this._handleKeydown);
 
         // Respect OS preference changes when user hasn't set an override.
         this._mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -33,6 +35,9 @@ class DarkModeToggle extends HTMLElement {
     disconnectedCallback() {
         if (this._handleClick) {
             this.removeEventListener('click', this._handleClick);
+        }
+        if (this._handleKeydown) {
+            this.removeEventListener('keydown', this._handleKeydown);
         }
         if (this._mediaQuery && this._handleMediaChange) {
             this._mediaQuery.removeEventListener(
@@ -62,6 +67,13 @@ class DarkModeToggle extends HTMLElement {
             this._isDark ? 'dark' : 'light',
         );
         this._render();
+    }
+
+    _handleKeydown(evt) {
+        if (evt.key === 'Enter' || evt.key === ' ') {
+            evt.preventDefault();
+            this._handleClick();
+        }
     }
 
     _handleMediaChange(evt) {

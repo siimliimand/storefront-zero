@@ -207,6 +207,12 @@ class ProductVariationForm extends HTMLElement {
         this._addToCartBtn.setAttribute('hx-target', '#mini-cart-container');
         this._addToCartBtn.setAttribute('hx-swap', 'innerHTML');
         this._addToCartBtn.setAttribute('hx-indicator', '#mini-cart-container');
+
+        // Tell HTMX to process the element so the dynamically-set
+        // hx-* attributes become active.
+        if (typeof htmx !== 'undefined') {
+            htmx.process(this._addToCartBtn);
+        }
     }
 }
 

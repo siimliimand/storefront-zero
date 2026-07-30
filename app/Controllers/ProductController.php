@@ -13,7 +13,7 @@ namespace ThemeApp\Controllers;
 
 use Flight;
 use ThemeApp\Concerns\FlushesWcNotices;
-use ThemeApp\View;
+use ThemeApp\ViewInterface;
 
 /**
  * ProductController manages product search and display via HTMX fragments.
@@ -24,16 +24,16 @@ class ProductController
     /**
      * View instance for rendering templates.
      *
-     * @var \ThemeApp\View
+     * @var \ThemeApp\ViewInterface
      */
-    private View $view;
+    private ViewInterface $view;
 
     /**
      * Constructor. Injected by the DI container.
      *
-     * @param \ThemeApp\View $view View renderer.
+     * @param \ThemeApp\ViewInterface $view View renderer.
      */
-    public function __construct( View $view )
+    public function __construct( ViewInterface $view )
     {
         $this->view = $view;
     }
@@ -84,12 +84,11 @@ class ProductController
         if ( empty( $products ) ) {
             $products = [];
         } else {
-            $products = array_filter(
-                wc_get_products( [
-                    'include' => $products,
-                    'return'  => 'objects',
-                ] )
-            );
+            $results = wc_get_products( [
+                'include' => $products,
+                'return'  => 'objects',
+            ] );
+            $products = array_filter( is_array( $results ) ? $results : [] );
         }
 
         $this->view->render( 'search-results', [
@@ -148,10 +147,18 @@ class ProductController
         // Collect attribute filters (filter_color, filter_size, etc.).
         $attributes = [];
         foreach ( $request->query as $key => $value ) {
-            if ( 0 === strpos( $key, 'filter_' ) && ! empty( $value ) ) {
-                $attribute_key   = sanitize_text_field( wp_unslash( $key ) );
-                $attribute_value = sanitize_text_field( wp_unslash( $value ) );
-                $attributes[ $attribute_key ] = $attribute_value;
+            if ( 0 !== strpos( $key, 'filter_' ) || empty( $value ) ) {
+                continue;
+            }
+
+            $slug           = sanitize_text_field( wp_unslash( substr( $key, 7 ) ) );
+            $attribute_value = sanitize_text_field( wp_unslash( $value ) );
+
+            // Validate the taxonomy exists. WooCommerce attributes use the pa_ prefix.
+            if ( taxonomy_exists( $slug ) ) {
+                $attributes[ $slug ] = $attribute_value;
+            } elseif ( taxonomy_exists( 'pa_' . $slug ) ) {
+                $attributes[ 'pa_' . $slug ] = $attribute_value;
             }
         }
 

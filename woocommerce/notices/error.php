@@ -5,6 +5,7 @@
  * Storefront Zero theme override for woocommerce/notices/error.php
  *
  * @package Storefront_Zero
+ * @version 8.6.0
  */
 
 defined( 'ABSPATH' ) || exit;

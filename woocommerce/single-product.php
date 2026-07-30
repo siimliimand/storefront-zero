@@ -5,6 +5,7 @@
  * Storefront Zero theme override for woocommerce/single-product.php
  *
  * @package Storefront_Zero
+ * @version 1.6.4
  */
 
 get_header();

@@ -159,7 +159,7 @@ it('renders a valid view and captures output', function () {
     require_once __DIR__ . '/../../app/View.php';
 
     ob_start();
-    \ThemeApp\View::render('search-results', [
+    (new \ThemeApp\View())->render('search-results', [
         'products' => [],
         'query'    => 'test',
     ]);
@@ -173,7 +173,7 @@ it('handles empty data array gracefully', function () {
     require_once __DIR__ . '/../../app/View.php';
 
     ob_start();
-    \ThemeApp\View::render('mini-cart-fragment');
+    (new \ThemeApp\View())->render('mini-cart-fragment');
     $output = ob_get_clean();
 
     // mini-cart-fragment.php should produce some HTML output.
@@ -194,5 +194,5 @@ it('throws RuntimeException for non-existent view when WP_DEBUG is true', functi
 
     $this->expectException(\RuntimeException::class);
 
-    \ThemeApp\View::render('this-view-does-not-exist-' . uniqid());
+    (new \ThemeApp\View())->render('this-view-does-not-exist-' . uniqid());
 });

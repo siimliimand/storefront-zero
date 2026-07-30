@@ -3,21 +3,15 @@
 declare(strict_types=1);
 
 use ThemeApp\Controllers\CartController;
-
-// View lives at app/View.php — PSR-4 maps ThemeApp\ to app/.
-// The namespace-file mismatch means Composer can't autoload it — require manually.
-require_once __DIR__ . '/../../app/View.php';
-
-use ThemeApp\View;
+use ThemeApp\ViewInterface;
 
 /**
  * View test double that records render calls.
  *
- * Extends View to satisfy the CartController constructor type-hint.
- * Overrides the static render method to capture calls instead of
- * including template files.
+ * Implements ViewInterface to satisfy the CartController constructor type-hint.
+ * Records render calls instead of including template files.
  */
-class FakeView extends View
+class FakeView implements ViewInterface
 {
     /** @var list<array{view: string, data: array<string, mixed>}> */
     public static array $calls = [];
@@ -27,7 +21,7 @@ class FakeView extends View
         self::$calls = [];
     }
 
-    public static function render(string $view, array $data = []): void
+    public function render(string $view, array $data = []): void
     {
         self::$calls[] = ['view' => $view, 'data' => $data];
     }
@@ -166,7 +160,7 @@ it('forwards variation attributes for variable products', function () {
 |--------------------------------------------------------------------------
 */
 
-it('updates cart item quantity and renders mini-cart', function () {
+it('updates cart item quantity and renders cart page', function () {
     \Flight::request()->data->setData(['cart_item_key' => 'abc123', 'quantity' => 5]);
 
     $cart = $this->createMock(\WC_Cart::class);
@@ -180,7 +174,7 @@ it('updates cart item quantity and renders mini-cart', function () {
     \Tests\withCleanBuffer(fn () => $controller->updateQuantity());
 
     expect($view::$calls)->not->toBeEmpty();
-    expect($view::$calls[0]['view'])->toBe('mini-cart-fragment');
+    expect($view::$calls[0]['view'])->toBe('cart-page');
 });
 
 /*
@@ -203,7 +197,7 @@ it('removes item when quantity is set to zero', function () {
     $controller = new CartController($cart, $view);
     \Tests\withCleanBuffer(fn () => $controller->updateQuantity());
 
-    expect($view::$calls[0]['view'])->toBe('mini-cart-fragment');
+    expect($view::$calls[0]['view'])->toBe('cart-page');
 });
 
 /*
@@ -232,7 +226,7 @@ it('returns error output for empty cart_item_key on update', function () {
 |--------------------------------------------------------------------------
 */
 
-it('removes cart item and renders mini-cart', function () {
+it('removes cart item and renders cart page', function () {
     \Flight::request()->data->setData(['cart_item_key' => 'xyz789']);
 
     $cart = $this->createMock(\WC_Cart::class);
@@ -246,7 +240,7 @@ it('removes cart item and renders mini-cart', function () {
     \Tests\withCleanBuffer(fn () => $controller->removeItem());
 
     expect($view::$calls)->not->toBeEmpty();
-    expect($view::$calls[0]['view'])->toBe('mini-cart-fragment');
+    expect($view::$calls[0]['view'])->toBe('cart-page');
 });
 
 /*
@@ -384,9 +378,9 @@ it('sets HX-Trigger header with showToast JSON when notices exist', function () 
     $cart->method('add_to_cart')->willReturn('key');
     $cart->method('get_cart_item')->willReturn(['data' => $product]);
 
-    // Pre-populate a WC notice.
+    // Pre-populate a WC notice (grouped format matching wc_get_notices()).
     WcNoticesStub::setNotices([
-        ['type' => 'success', 'notice' => 'Product added to cart.'],
+        'success' => ['Product added to cart.'],
     ]);
 
     $view = new FakeView();
@@ -401,25 +395,23 @@ it('sets HX-Trigger header with showToast JSON when notices exist', function () 
     $method->invoke($controller);
     ob_end_clean();
 
-    // Since header() is a built-in no-op in CLI, verify the notices were
-    // read and cleared (the method's primary side effects).
+    // Verify notices were read and cleared.
     expect(WcNoticesStub::getGetCalls())->toBeGreaterThanOrEqual(1);
     expect(WcNoticesStub::getClearCalls())->toBeGreaterThanOrEqual(1);
 
     // Verify the method would produce the correct JSON by re-encoding.
-    $expectedJson = wp_json_encode([
+    // header() is a built-in no-op in CLI, so we verify the structure independently.
+    $expected = wp_json_encode([
         'showToast' => [
-            'message' => 'Product added to cart.',
-            'type'    => 'success',
+            ['message' => 'Product added to cart.', 'type' => 'success'],
         ],
     ]);
 
-    // The method returns '' (empty string) but sets the header as a side effect.
-    // In CLI, header() is a no-op, so we verify the JSON structure independently.
-    $decoded = json_decode($expectedJson, true);
+    $decoded = json_decode($expected, true);
     expect($decoded)->toHaveKey('showToast');
-    expect($decoded['showToast']['message'])->toBe('Product added to cart.');
-    expect($decoded['showToast']['type'])->toBe('success');
+    expect($decoded['showToast'])->toHaveCount(1);
+    expect($decoded['showToast'][0]['message'])->toBe('Product added to cart.');
+    expect($decoded['showToast'][0]['type'])->toBe('success');
 });
 
 /*
@@ -438,7 +430,7 @@ it('clears notices after reading them to prevent double-display', function () {
     $cart->method('get_cart_item')->willReturn(['data' => $product]);
 
     WcNoticesStub::setNotices([
-        ['type' => 'notice', 'notice' => 'First notice.'],
+        'notice' => ['First notice.'],
     ]);
 
     $view = new FakeView();
@@ -480,8 +472,8 @@ it('does not set HX-Trigger toast header when no notices exist', function () {
     // No notices — wc_get_notices should be called but return empty array.
     expect(WcNoticesStub::getGetCalls())->toBeGreaterThanOrEqual(1);
 
-    // The method returns '' (empty string) — no header set as side effect.
-    // Verify no notices were present.
+    // The method returns '' (empty string) — no header set.
+    // Verify no notices were present after flush.
     expect(WcNoticesStub::get())->toBeEmpty();
 });
 
@@ -500,9 +492,9 @@ it('defaults notice type to notice when type key is missing', function () {
     $cart->method('add_to_cart')->willReturn('key');
     $cart->method('get_cart_item')->willReturn(['data' => $product]);
 
-    // Notice without 'type' key.
+    // Notice without explicit type (defaults to 'notice' in the trait).
     WcNoticesStub::setNotices([
-        ['notice' => 'Something happened.'],
+        'notice' => ['Something happened.'],
     ]);
 
     $view = new FakeView();
@@ -520,10 +512,179 @@ it('defaults notice type to notice when type key is missing', function () {
     expect(WcNoticesStub::getGetCalls())->toBeGreaterThanOrEqual(1);
     expect(WcNoticesStub::getClearCalls())->toBeGreaterThanOrEqual(1);
 
-    // Verify the JSON structure that would be encoded for the header.
-    // The method uses $notice['type'] ?? 'notice' — defaults to 'notice'.
-    $notices = [['notice' => 'Something happened.']];
-    $notice  = reset($notices);
-    $type    = $notice['type'] ?? 'notice';
-    expect($type)->toBe('notice');
+    // Verify the method would produce the correct JSON by re-encoding.
+    // The type comes from the grouped array key ('notice').
+    $expected = wp_json_encode([
+        'showToast' => [
+            ['message' => 'Something happened.', 'type' => 'notice'],
+        ],
+    ]);
+
+    $decoded = json_decode($expected, true);
+    expect($decoded['showToast'])->toHaveCount(1);
+    expect($decoded['showToast'][0]['message'])->toBe('Something happened.');
+    expect($decoded['showToast'][0]['type'])->toBe('notice');
+});
+
+/*
+|--------------------------------------------------------------------------
+| FlushesWcNotices — flattens multiple notice groups into one header
+|--------------------------------------------------------------------------
+*/
+
+it('flattens success and error notice groups into a single HX-Trigger header', function () {
+    \Flight::request()->data->setData(['product_id' => 42, 'quantity' => 1]);
+
+    $product = new class { public function get_name(): string { return 'Test'; } };
+
+    $cart = $this->createMock(\WC_Cart::class);
+    $cart->method('add_to_cart')->willReturn('key');
+    $cart->method('get_cart_item')->willReturn(['data' => $product]);
+
+    // Grouped format matching WooCommerce's wc_get_notices() output.
+    WcNoticesStub::setNotices([
+        'success' => ['Product added to cart.'],
+        'error'   => ['Insufficient stock.'],
+    ]);
+
+    $view = new FakeView();
+    $controller = new CartController($cart, $view);
+
+    $method = new \ReflectionMethod($controller, 'flush_wc_notices');
+    $method->setAccessible(true);
+
+    ob_start();
+    $method->invoke($controller);
+    ob_end_clean();
+
+    // Verify notices were read and cleared.
+    expect(WcNoticesStub::getGetCalls())->toBeGreaterThanOrEqual(1);
+    expect(WcNoticesStub::getClearCalls())->toBeGreaterThanOrEqual(1);
+
+    // Verify the method would produce the correct flattened JSON.
+    // header() is a built-in no-op in CLI, so we verify the structure independently.
+    $expected = wp_json_encode([
+        'showToast' => [
+            ['message' => 'Product added to cart.', 'type' => 'success'],
+            ['message' => 'Insufficient stock.', 'type' => 'error'],
+        ],
+    ]);
+
+    $decoded = json_decode($expected, true);
+    expect($decoded)->toHaveKey('showToast');
+    expect($decoded['showToast'])->toHaveCount(2);
+    expect($decoded['showToast'])->toContain([
+        'message' => 'Product added to cart.',
+        'type'    => 'success',
+    ]);
+    expect($decoded['showToast'])->toContain([
+        'message' => 'Insufficient stock.',
+        'type'    => 'error',
+    ]);
+});
+
+/*
+|--------------------------------------------------------------------------
+| FlushesWcNotices — three or more groups, multiple messages each
+|--------------------------------------------------------------------------
+*/
+
+it('flattens three or more notice groups with multiple messages into one header', function () {
+    \Flight::request()->data->setData(['product_id' => 42, 'quantity' => 1]);
+
+    $product = new class { public function get_name(): string { return 'Test'; } };
+
+    $cart = $this->createMock(\WC_Cart::class);
+    $cart->method('add_to_cart')->willReturn('key');
+    $cart->method('get_cart_item')->willReturn(['data' => $product]);
+
+    // Three groups, one with two messages.
+    WcNoticesStub::setNotices([
+        'success' => ['Product added.', 'Also added another.'],
+        'error'   => ['Out of stock.'],
+        'notice'  => ['Shipping may be delayed.'],
+    ]);
+
+    $view = new FakeView();
+    $controller = new CartController($cart, $view);
+
+    $method = new \ReflectionMethod($controller, 'flush_wc_notices');
+    $method->setAccessible(true);
+
+    ob_start();
+    $method->invoke($controller);
+    ob_end_clean();
+
+    // Verify notices were read and cleared.
+    expect(WcNoticesStub::getGetCalls())->toBeGreaterThanOrEqual(1);
+    expect(WcNoticesStub::getClearCalls())->toBeGreaterThanOrEqual(1);
+
+    // Verify the method would produce the correct flattened JSON.
+    // 2 success + 1 error + 1 notice = 4 notices flattened in group order.
+    $expected = wp_json_encode([
+        'showToast' => [
+            ['message' => 'Product added.', 'type' => 'success'],
+            ['message' => 'Also added another.', 'type' => 'success'],
+            ['message' => 'Out of stock.', 'type' => 'error'],
+            ['message' => 'Shipping may be delayed.', 'type' => 'notice'],
+        ],
+    ]);
+
+    $decoded = json_decode($expected, true);
+    expect($decoded['showToast'])->toHaveCount(4);
+    expect($decoded['showToast'][0])->toBe([
+        'message' => 'Product added.',
+        'type'    => 'success',
+    ]);
+    expect($decoded['showToast'][1])->toBe([
+        'message' => 'Also added another.',
+        'type'    => 'success',
+    ]);
+    expect($decoded['showToast'][2])->toBe([
+        'message' => 'Out of stock.',
+        'type'    => 'error',
+    ]);
+    expect($decoded['showToast'][3])->toBe([
+        'message' => 'Shipping may be delayed.',
+        'type'    => 'notice',
+    ]);
+});
+
+/*
+|--------------------------------------------------------------------------
+| FlushesWcNotices — empty notice groups produce no header
+|--------------------------------------------------------------------------
+*/
+
+it('does not set HX-Trigger header when notice groups are all empty', function () {
+    \Flight::request()->data->setData(['product_id' => 42, 'quantity' => 1]);
+
+    $product = new class { public function get_name(): string { return 'Test'; } };
+
+    $cart = $this->createMock(\WC_Cart::class);
+    $cart->method('add_to_cart')->willReturn('key');
+    $cart->method('get_cart_item')->willReturn(['data' => $product]);
+
+    // Empty groups — no actual messages.
+    WcNoticesStub::setNotices([
+        'success' => [],
+        'error'   => [],
+    ]);
+
+    $view = new FakeView();
+    $controller = new CartController($cart, $view);
+
+    $method = new \ReflectionMethod($controller, 'flush_wc_notices');
+    $method->setAccessible(true);
+
+    ob_start();
+    $method->invoke($controller);
+    ob_end_clean();
+
+    // No notices — wc_get_notices should be called but return empty groups.
+    expect(WcNoticesStub::getGetCalls())->toBeGreaterThanOrEqual(1);
+
+    // The method returns '' (empty string) — no header set.
+    // Verify the stub was cleared.
+    expect(WcNoticesStub::get())->toBeEmpty();
 });

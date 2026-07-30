@@ -23,6 +23,48 @@
         }
     })();
     </script>
+    <!-- Critical CSS: above-the-fold styles inlined for fast first paint -->
+    <style>
+    /* Reset & base */
+    *, ::after, ::before { box-sizing: border-box; border-color: currentColor; }
+    html { font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; }
+    body { margin: 0; }
+
+    /* Dark mode base */
+    .dark { color-scheme: dark; }
+    .dark body, .dark html { background-color: #0f172a; color: #f3f4f6; }
+
+    /* Header */
+    .site-header { background-color: #ffffff; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+    .dark .site-header { background-color: #1a1a2e; }
+    .site-header .max-w-7xl { max-width: 80rem; margin-left: auto; margin-right: auto; padding-left: 1rem; padding-right: 1rem; }
+    @media (min-width: 640px) { .site-header .max-w-7xl { padding-left: 1.5rem; padding-right: 1.5rem; } }
+    @media (min-width: 1024px) { .site-header .max-w-7xl { padding-left: 2rem; padding-right: 2rem; } }
+    .site-header .flex { display: flex; }
+    .site-header .items-center { align-items: center; }
+    .site-header .justify-between { justify-content: space-between; }
+    .site-header .h-16 { height: 4rem; }
+
+    /* Branding */
+    .site-header .text-xl { font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; }
+    .site-header .text-gray-900 { color: #111827; }
+    .dark .site-header .text-gray-900, .dark .site-header .text-gray-100 { color: #f3f4f6; }
+
+    /* Nav */
+    .site-header nav.flex { display: flex; align-items: center; }
+
+    /* Search input visible size */
+    .site-header .max-w-md { max-width: 28rem; }
+    .site-header .mx-8 { margin-left: 2rem; margin-right: 2rem; }
+    .site-header .relative { position: relative; }
+    .site-header .flex-1 { flex: 1 1 0%; }
+
+    /* HTMX indicators — hidden by default */
+    .htmx-indicator { display: none; }
+
+    /* Skip link */
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
+    </style>
     <?php wp_head(); ?>
 </head>
 

@@ -6,6 +6,7 @@
  * Provides a quantity stepper with +/- buttons.
  *
  * @package Storefront_Zero
+ * @version 10.1.0
  *
  * @var bool   $input_only  Whether to show input only (no buttons).
  * @var string $input_name  Input name attribute.

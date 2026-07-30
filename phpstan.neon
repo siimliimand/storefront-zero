@@ -9,33 +9,13 @@ parameters:
         - assets/
         - woocommerce/
         - tests/
+    bootstrapFiles:
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
     stubFiles:
         - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
-        - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
 
-    # WooCommerce function/class stubs are not fully resolved by phpstan-wordpress;
-    # these ignores prevent false positives.
-    ignoreErrors:
-        - '#Function WC not found\.#'
-        - '#Function wc_get_product not found\.#'
-        - '#Function wc_get_products not found\.#'
-        - '#Function wc_get_cart_url not found\.#'
-        - '#Function wc_get_notices not found\.#'
-        - '#Function wc_clear_notices not found\.#'
-        - '#Function is_product not found\.#'
-        - '#Function is_woocommerce not found\.#'
-        - '#Class WC_Cart not found\.#'
-        - '#has unknown class WC_Cart#'
-        - '#Call to method .* on an unknown class WC_Cart\.#'
-        - '#Parameter .* of method .* has invalid type WC_Cart\.#'
-        - '#Anonymous function has invalid return type WC_Cart\.#'
-        - '#Call to method .* on an unknown class WC_Product\.#'
-        - '#Function woocommerce_product_loop_start not found\.#'
-        - '#Function woocommerce_product_loop_end not found\.#'
-        - '#Function wc_get_template_part not found\.#'
-        - '#Function is_account_page not found\.#'
-        - '#Function is_cart not found\.#'
-        - '#Function is_checkout not found\.#'
+    ignoreErrors: []
 
 includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon

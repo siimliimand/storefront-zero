@@ -4,7 +4,8 @@ declare(strict_types=1);
 /**
  * Minimal DI container for the Storefront Zero theme.
  *
- * Registers WooCommerce cart, View, and controller factories.
+ * Registers View and controller factories. WooCommerce cart and
+ * CartController are only registered when WooCommerce is active.
  * Controllers are created as instances (replacing the current static
  * usage) once tasks 3.2–3.5 migrate them to instance methods.
  *
@@ -15,6 +16,7 @@ namespace ThemeApp;
 
 use ThemeApp\Controllers\CartController;
 use ThemeApp\Controllers\ProductController;
+use ThemeApp\ViewInterface;
 
 class Container
 {
@@ -80,27 +82,29 @@ class Container
     {
         $container = new self();
 
-        // WooCommerce cart singleton — always return the live cart object.
-        $container->set(\WC_Cart::class, static function (): \WC_Cart {
-            return WC()->cart;
-        });
+        // WooCommerce cart — only available when WC is active.
+        if (function_exists('WC')) {
+            $container->set(\WC_Cart::class, static function (): \WC_Cart {
+                return WC()->cart;
+            });
 
-        // View renderer.
-        $container->set(View::class, static function (): View {
+            // CartController depends on WC_Cart.
+            $container->set(CartController::class, static function (self $c): CartController {
+                return new CartController(
+                    $c->get(\WC_Cart::class),
+                    $c->get(ViewInterface::class),
+                );
+            });
+        }
+
+        // View renderer — unconditional.
+        $container->set(ViewInterface::class, static function (): ViewInterface {
             return new View();
-        });
-
-        // Controllers — factories that wire dependencies automatically.
-        $container->set(CartController::class, static function (self $c): CartController {
-            return new CartController(
-                $c->get(\WC_Cart::class),
-                $c->get(View::class),
-            );
         });
 
         $container->set(ProductController::class, static function (self $c): ProductController {
             return new ProductController(
-                $c->get(View::class),
+                $c->get(ViewInterface::class),
             );
         });
 

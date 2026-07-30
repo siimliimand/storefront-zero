@@ -36,7 +36,7 @@ it('namespaces under ThemeApp\\Controllers', function () {
 it('has constructor with WC_Cart and View parameters', function () {
     $source = file_get_contents(__DIR__ . '/../../app/Controllers/CartController.php');
 
-    expect($source)->toContain('public function __construct( \\WC_Cart $cart, View $view )');
+    expect($source)->toContain('public function __construct( \\WC_Cart $cart, ViewInterface $view )');
 });
 
 it('assigns cart and view to private properties', function () {

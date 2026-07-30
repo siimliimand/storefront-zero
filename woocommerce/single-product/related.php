@@ -8,7 +8,7 @@
  *
  * @see         https://woocommerce.com/document/template-structure/
  * @package     Storefront_Zero
- * @version     1.0.0
+ * @version     10.3.0
  *
  * @var WC_Product $product The current product object.
  */

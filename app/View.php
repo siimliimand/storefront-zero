@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace ThemeApp;
 
-class View
+class View implements ViewInterface
 {
     /**
      * Render a view template with the given data.
@@ -15,7 +15,7 @@ class View
      *
      * @throws \RuntimeException If the view file does not exist.
      */
-    public static function render( string $view, array $data = [] ): void
+    public function render( string $view, array $data = [] ): void
     {
         $view = basename( $view );
         $path = __DIR__ . '/Views/' . $view . '.php';

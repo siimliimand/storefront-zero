@@ -20,7 +20,7 @@ class FilterFakeProductView extends View
         self::$calls = [];
     }
 
-    public static function render(string $view, array $data = []): void
+    public function render(string $view, array $data = []): void
     {
         self::$calls[] = ['view' => $view, 'data' => $data];
     }

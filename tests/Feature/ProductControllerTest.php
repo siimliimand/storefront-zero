@@ -14,7 +14,7 @@ use ThemeApp\View;
  * View test double that records render calls.
  *
  * Extends View to satisfy the ProductController constructor type-hint.
- * Overrides the static render method to capture calls instead of
+ * Overrides the render method to capture calls instead of
  * including template files.
  */
 class FakeProductView extends View
@@ -27,7 +27,7 @@ class FakeProductView extends View
         self::$calls = [];
     }
 
-    public static function render(string $view, array $data = []): void
+    public function render(string $view, array $data = []): void
     {
         self::$calls[] = ['view' => $view, 'data' => $data];
     }

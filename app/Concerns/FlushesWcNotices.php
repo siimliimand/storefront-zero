@@ -10,19 +10,26 @@ trait FlushesWcNotices
         $notices = wc_get_notices();
         wc_clear_notices();
 
-        if ( ! empty( $notices ) ) {
-            $notice = reset( $notices );
-            $type   = $notice['type'] ?? 'notice';
+        $flat = [];
 
-            header(
-                'HX-Trigger: ' . wp_json_encode( [
-                    'showToast' => [
-                        'message' => $notice['notice'] ?? '',
-                        'type'    => $type,
-                    ],
-                ] )
-            );
+        foreach ( $notices as $type => $group ) {
+            foreach ( $group as $message ) {
+                $flat[] = [
+                    'message' => $message,
+                    'type'    => $type,
+                ];
+            }
         }
+
+        if ( [] === $flat ) {
+            return '';
+        }
+
+        header(
+            'HX-Trigger: ' . wp_json_encode( [
+                'showToast' => $flat,
+            ] )
+        );
 
         return '';
     }

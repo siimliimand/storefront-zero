@@ -102,8 +102,8 @@ class ProductController
      * Faceted product filter via HTMX.
      *
      * Accepts query parameters (category, attribute, min_price, max_price,
-     * orderby, order), sanitises them, builds a WP_Query via pre_get_posts,
-     * and renders the product-grid HTML fragment.
+     * orderby, order), sanitises them, builds a WP_Query with the assembled
+     * arguments, and renders the product-grid HTML fragment.
      *
      * @return void
      */
@@ -236,25 +236,8 @@ class ProductController
             $query_args['meta_query'] = $price_meta_query;
         }
 
-        // Apply filters via pre_get_posts, scoped to this query instance.
-        $filter_args = $query_args;
-
-        add_action( 'pre_get_posts', function ( \WP_Query $wp_query ) use ( $filter_args ): void {
-            // Only modify our secondary query — skip the main query.
-            if ( $wp_query->is_main_query() ) {
-                return;
-            }
-
-            foreach ( $filter_args as $key => $value ) {
-                $wp_query->set( $key, $value );
-            }
-        } );
-
-        // Query args are applied via the pre_get_posts callback above.
-        $product_query = new \WP_Query( [
-            'post_type'   => 'product',
-            'post_status' => 'publish',
-        ] );
+        // Pass all query args directly to WP_Query — no pre_get_posts hook needed.
+        $product_query = new \WP_Query( $query_args );
 
         // Render the product grid.
         $this->view->render( 'product-grid', [

@@ -71,7 +71,6 @@ jobs:
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
-    needs: js-build
 
     steps:
       - name: Checkout

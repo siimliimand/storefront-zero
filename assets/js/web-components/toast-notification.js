@@ -35,12 +35,13 @@ class ToastNotification extends HTMLElement {
 		// Positioning is handled by the container; toasts stack inside it.
 		this.className =
 			'pointer-events-auto px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium transition-opacity duration-300';
-		this.setAttribute('role', 'status');
-		this.setAttribute('aria-live', 'polite');
-
 		if (type === 'error') {
+			this.setAttribute('role', 'alert');
+			this.setAttribute('aria-live', 'assertive');
 			this.classList.add('bg-red-600');
 		} else {
+			this.setAttribute('role', 'status');
+			this.setAttribute('aria-live', 'polite');
 			this.classList.add('bg-green-600');
 		}
 

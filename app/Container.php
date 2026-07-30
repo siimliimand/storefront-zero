@@ -16,6 +16,7 @@ namespace ThemeApp;
 
 use ThemeApp\Controllers\CartController;
 use ThemeApp\Controllers\ProductController;
+use ThemeApp\ViewInterface;
 
 class Container
 {
@@ -91,19 +92,19 @@ class Container
             $container->set(CartController::class, static function (self $c): CartController {
                 return new CartController(
                     $c->get(\WC_Cart::class),
-                    $c->get(View::class),
+                    $c->get(ViewInterface::class),
                 );
             });
         }
 
         // View renderer — unconditional.
-        $container->set(View::class, static function (): View {
+        $container->set(ViewInterface::class, static function (): ViewInterface {
             return new View();
         });
 
         $container->set(ProductController::class, static function (self $c): ProductController {
             return new ProductController(
-                $c->get(View::class),
+                $c->get(ViewInterface::class),
             );
         });
 

@@ -13,7 +13,7 @@ namespace ThemeApp\Controllers;
 
 use Flight;
 use ThemeApp\Concerns\FlushesWcNotices;
-use ThemeApp\View;
+use ThemeApp\ViewInterface;
 
 /**
  * ProductController manages product search and display via HTMX fragments.
@@ -24,16 +24,16 @@ class ProductController
     /**
      * View instance for rendering templates.
      *
-     * @var \ThemeApp\View
+     * @var \ThemeApp\ViewInterface
      */
-    private View $view;
+    private ViewInterface $view;
 
     /**
      * Constructor. Injected by the DI container.
      *
-     * @param \ThemeApp\View $view View renderer.
+     * @param \ThemeApp\ViewInterface $view View renderer.
      */
-    public function __construct( View $view )
+    public function __construct( ViewInterface $view )
     {
         $this->view = $view;
     }

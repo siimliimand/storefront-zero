@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace ThemeApp;
 
-class View
+class View implements ViewInterface
 {
     /**
      * Render a view template with the given data.

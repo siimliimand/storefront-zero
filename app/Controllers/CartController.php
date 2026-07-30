@@ -13,7 +13,7 @@ namespace ThemeApp\Controllers;
 
 use Flight;
 use ThemeApp\Concerns\FlushesWcNotices;
-use ThemeApp\View;
+use ThemeApp\ViewInterface;
 
 class CartController
 {
@@ -21,9 +21,9 @@ class CartController
 	/**
 	 * View instance for rendering templates.
 	 *
-	 * @var \ThemeApp\View
+	 * @var \ThemeApp\ViewInterface
 	 */
-	private View $view;
+	private ViewInterface $view;
 
 	/**
 	 * WooCommerce cart instance.
@@ -35,10 +35,10 @@ class CartController
 	/**
 	 * Constructor. Injected by the DI container.
 	 *
-	 * @param \WC_Cart     $cart WooCommerce cart instance.
-	 * @param \ThemeApp\View $view View renderer.
+	 * @param \WC_Cart           $cart WooCommerce cart instance.
+	 * @param \ThemeApp\ViewInterface $view View renderer.
 	 */
-	public function __construct( \WC_Cart $cart, View $view )
+	public function __construct( \WC_Cart $cart, ViewInterface $view )
 	{
 		$this->cart = $cart;
 		$this->view = $view;

@@ -30,26 +30,26 @@ get_header();
 		<?php else : ?>
 
 			<!-- Hero section -->
-			<section class="bg-gradient-to-br from-gray-900 to-gray-800 text-white py-20 px-4 sm:px-6 lg:px-8">
+			<section class="bg-gradient-to-br from-brand-900 to-brand-800 text-white py-20 px-4 sm:px-6 lg:px-8">
 				<div class="max-w-4xl mx-auto text-center">
 					<h1 class="text-4xl sm:text-5xl font-bold mb-6">
 						<?php echo esc_html( get_bloginfo( 'name' ) ); ?>
 					</h1>
 					<?php $description = get_bloginfo( 'description', 'display' ); ?>
 					<?php if ( $description ) : ?>
-						<p class="text-lg sm:text-xl text-gray-300 mb-8">
+						<p class="text-lg sm:text-xl text-brand-200 mb-8">
 							<?php echo esc_html( $description ); ?>
 						</p>
 					<?php endif; ?>
 
 					<?php if ( class_exists( 'WooCommerce' ) ) : ?>
 						<a href="<?php echo esc_url( wc_get_page_permalink( 'shop' ) ); ?>"
-						   class="inline-block bg-white text-gray-900 font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors">
+						   class="inline-block bg-white text-brand-900 font-semibold px-8 py-3 rounded-lg hover:bg-brand-100 transition-colors">
 							<?php esc_html_e( 'Browse Shop', 'storefront-zero' ); ?>
 						</a>
 					<?php else : ?>
 						<a href="<?php echo esc_url( get_permalink( get_option( 'page_for_posts' ) ) ); ?>"
-						   class="inline-block bg-white text-gray-900 font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors">
+						   class="inline-block bg-white text-brand-900 font-semibold px-8 py-3 rounded-lg hover:bg-brand-100 transition-colors">
 							<?php esc_html_e( 'Read Latest', 'storefront-zero' ); ?>
 						</a>
 					<?php endif; ?>

@@ -95,6 +95,7 @@ class CartController
 			$this->view->render( 'cart-error', [ 'message' => __( 'Could not add product to cart. Please try again.', 'storefront-zero' ) ] );
 		}
 
+		ob_end_clean();
 		echo $this->flush_wc_notices();
 	}
 
@@ -164,6 +165,7 @@ class CartController
 			echo '<!-- Could not update cart -->';
 		}
 
+		ob_end_clean();
 		echo $this->flush_wc_notices();
 	}
 
@@ -197,6 +199,7 @@ class CartController
 			echo '<!-- Could not remove cart item -->';
 		}
 
+		ob_end_clean();
 		echo $this->flush_wc_notices();
 	}
 }

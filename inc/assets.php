@@ -107,9 +107,9 @@ function storefront_zero_enqueue_assets(): void {
 	}
 
 	// Web Components — explicit registration (no glob I/O on every page load).
+	// Global components loaded on every page.
 	$web_components = [
 		'mobile-drawer',
-		'toast-notification',
 		'dark-mode-toggle',
 	];
 
@@ -122,6 +122,19 @@ function storefront_zero_enqueue_assets(): void {
 			$wc_uri,
 			[ 'htmx' ],
 			$wc_version,
+			true
+		);
+	}
+
+	// Toast notification — only on WooCommerce pages (cart, checkout, shop, product, account).
+	if ( is_woocommerce() || is_cart() || is_checkout() || is_account_page() || is_product() ) {
+		[ $toast_path, $toast_uri ] = storefront_zero_resolve_js( 'assets/js/web-components/toast-notification.js' );
+
+		wp_enqueue_script(
+			'sz-wc-toast-notification',
+			$toast_uri,
+			[ 'htmx' ],
+			storefront_zero_filemtime( $toast_path ),
 			true
 		);
 	}

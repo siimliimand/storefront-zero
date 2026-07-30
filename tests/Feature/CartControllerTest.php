@@ -166,7 +166,7 @@ it('forwards variation attributes for variable products', function () {
 |--------------------------------------------------------------------------
 */
 
-it('updates cart item quantity and renders mini-cart', function () {
+it('updates cart item quantity and renders cart page', function () {
     \Flight::request()->data->setData(['cart_item_key' => 'abc123', 'quantity' => 5]);
 
     $cart = $this->createMock(\WC_Cart::class);
@@ -180,7 +180,7 @@ it('updates cart item quantity and renders mini-cart', function () {
     \Tests\withCleanBuffer(fn () => $controller->updateQuantity());
 
     expect($view::$calls)->not->toBeEmpty();
-    expect($view::$calls[0]['view'])->toBe('mini-cart-fragment');
+    expect($view::$calls[0]['view'])->toBe('cart-page');
 });
 
 /*
@@ -203,7 +203,7 @@ it('removes item when quantity is set to zero', function () {
     $controller = new CartController($cart, $view);
     \Tests\withCleanBuffer(fn () => $controller->updateQuantity());
 
-    expect($view::$calls[0]['view'])->toBe('mini-cart-fragment');
+    expect($view::$calls[0]['view'])->toBe('cart-page');
 });
 
 /*
@@ -232,7 +232,7 @@ it('returns error output for empty cart_item_key on update', function () {
 |--------------------------------------------------------------------------
 */
 
-it('removes cart item and renders mini-cart', function () {
+it('removes cart item and renders cart page', function () {
     \Flight::request()->data->setData(['cart_item_key' => 'xyz789']);
 
     $cart = $this->createMock(\WC_Cart::class);
@@ -246,7 +246,7 @@ it('removes cart item and renders mini-cart', function () {
     \Tests\withCleanBuffer(fn () => $controller->removeItem());
 
     expect($view::$calls)->not->toBeEmpty();
-    expect($view::$calls[0]['view'])->toBe('mini-cart-fragment');
+    expect($view::$calls[0]['view'])->toBe('cart-page');
 });
 
 /*

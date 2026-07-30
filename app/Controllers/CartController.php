@@ -129,7 +129,7 @@ class CartController
 
 	/**
 	 * Update cart item quantity via HTMX POST.
-	 * Returns updated mini-cart fragment with HX-Trigger header.
+	 * Returns updated cart page fragment with HX-Trigger header.
 	 */
 	public function updateQuantity(): void
 	{
@@ -158,7 +158,7 @@ class CartController
 
 		if ( $success ) {
 			header( 'HX-Trigger: cartUpdated' );
-			$this->renderMiniCart();
+			$this->renderCartPage();
 		} else {
 			status_header( 400 );
 			echo '<!-- Could not update cart -->';
@@ -169,7 +169,7 @@ class CartController
 
 	/**
 	 * Remove cart item via HTMX DELETE.
-	 * Returns updated mini-cart fragment with HX-Trigger header.
+	 * Returns updated cart page fragment with HX-Trigger header.
 	 */
 	public function removeItem(): void
 	{
@@ -191,7 +191,7 @@ class CartController
 
 		if ( $removed ) {
 			header( 'HX-Trigger: cartUpdated' );
-			$this->renderMiniCart();
+			$this->renderCartPage();
 		} else {
 			status_header( 400 );
 			echo '<!-- Could not remove cart item -->';

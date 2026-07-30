@@ -10,7 +10,7 @@ module.exports = {
     './assets/js/**/*.js',
     './template-parts/**/*.php',
     './templates/**/*.php',
-    '././*.php',
+    './*.php',
     './sidebar.php',
   ],
   theme: {

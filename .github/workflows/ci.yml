@@ -39,6 +39,9 @@ jobs:
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --no-progress --error-format=github
 
+      - name: Run PHPCS
+        run: vendor/bin/phpcs --standard=WordPress --extensions=php --ignore=vendor/,node_modules/,assets/
+
       - name: Run Pest
         run: vendor/bin/pest
 
@@ -58,6 +61,9 @@ jobs:
 
       - name: Install npm dependencies
         run: npm ci
+
+      - name: Prettier check
+        run: npx prettier --check "assets/**/*.{js,css}"
 
       - name: Build
         run: npm run build

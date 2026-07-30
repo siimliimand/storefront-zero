@@ -36,12 +36,31 @@ $added_product = $added_product ?? '';
     </a>
     <?php if ( '' !== $added_product ) : ?>
         <div class="added-product-name absolute top-full right-0 mt-2 w-56 bg-white dark:bg-darkCard border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 z-50 text-sm text-gray-700 dark:text-gray-300">
-            <span class="block font-medium text-green-600 dark:text-green-400 mb-1">
+            <button type="button"
+                    class="sz-added-cart-close absolute top-1 right-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 leading-none p-1"
+                    aria-label="<?php esc_attr_e( 'Dismiss', 'storefront-zero' ); ?>">
+                &times;
+            </button>
+            <span class="block font-medium text-green-600 dark:text-green-400 mb-1 pr-4">
                 <?php esc_html_e( 'Added to cart', 'storefront-zero' ); ?>
             </span>
             <span class="block">
                 <?php echo esc_html( $added_product ); ?>
             </span>
         </div>
+        <script>
+            (function () {
+                var popup = document.querySelector('.added-product-name');
+                if (!popup) return;
+                function dismiss() {
+                    popup.style.transition = 'opacity 0.3s';
+                    popup.style.opacity = '0';
+                    setTimeout(function () { popup.remove(); }, 300);
+                }
+                setTimeout(dismiss, 3000);
+                var btn = popup.querySelector('.sz-added-cart-close');
+                if (btn) btn.addEventListener('click', dismiss);
+            })();
+        </script>
     <?php endif; ?>
 </div>

@@ -59,7 +59,7 @@ do_action( 'woocommerce_before_cart_table' );
 				. 'hx-swap="innerHTML">',
 				$cart_item['quantity'],
 				$_product->get_max_purchase_quantity(),
-				esc_attr__( 'Quantity', 'storefront-zero' ),
+				sprintf( esc_attr__( 'Quantity for %s', 'storefront-zero' ), wp_strip_all_tags( $product_name ) ),
 				esc_url( home_url( '/htmx-api/cart/update-qty' ) ),
 				esc_attr( $cart_item_key )
 			);
